@@ -74,7 +74,7 @@ const SearchBar = ({ compact = false }) => {
         </div>
 
         <div className="flex items-end md:items-center gap-2 md:gap-4 md:col-span-2">
-          <Button onClick={() => setShowAdvanced((v) => !v)} variant="outline" className="hidden md:inline-flex">
+          <Button onClick={() => setShowAdvanced((v) => !v)} variant="outline" className="inline-flex">
             {showAdvanced ? 'Hide Filters' : 'Show Filters'}
           </Button>
 
