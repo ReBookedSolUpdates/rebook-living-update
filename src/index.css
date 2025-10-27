@@ -23,10 +23,10 @@ All colors MUST be HSL.
     --primary-hover: 160 84% 28%;
     --primary-light: 160 50% 90%;
 
-    /* Warm orange accent from ReBooked */
-    --accent: 43 96% 56%;
+    /* Warm orange accent from ReBooked (toned down) */
+    --accent: 43 90%  Fifty-Three%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 43 96% 48%;
+    --accent-hover: 43 90% 48%;
 
     --secondary: 160 20% 96%;
     --secondary-foreground: 160 84% 20%;
