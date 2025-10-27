@@ -144,14 +144,16 @@ const Index = () => {
       <section className="py-20 bg-gradient-to-r from-accent via-accent-hover to-accent">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Have a Property to List?
+            Want to collaborate or advertise with us?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Reach thousands of students looking for accommodation. List your property today!
+            We're open to partnerships and thoughtful collaborations. Get in touch and let's discuss how we can work together.
           </p>
-          <Button size="lg" variant="secondary" className="text-lg px-8">
-            List Your Property
-          </Button>
+          <Link to="/contact">
+            <Button size="lg" variant="secondary" className="text-lg px-8">
+              Contact Us
+            </Button>
+          </Link>
         </div>
       </section>
     </Layout>
