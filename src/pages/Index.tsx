@@ -37,10 +37,10 @@ const Index = () => {
 
         <div className="container mx-auto px-4 relative z-10 flex h-full flex-col items-center justify-center text-center">
           <div className="max-w-3xl mx-auto mb-8">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
               Find Your Perfect Student Home in South Africa
             </h1>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-lg sm:text-xl text-white/90 mb-6 max-w-2xl mx-auto">
               Discover quality, affordable, and NSFAS-accredited accommodation near your university
             </p>
           </div>
