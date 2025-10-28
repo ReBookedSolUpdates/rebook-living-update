@@ -236,6 +236,7 @@ const ListingDetail = () => {
               </CardHeader>
               <CardContent>
                 <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Reviews placeholder</div>
+                <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
               </CardContent>
             </Card>
 
