@@ -54,34 +54,6 @@ const ListingDetail = () => {
     }
   };
 
-  // Prev / Next listing ids for quick navigation
-  const { data: prevIdData } = useQuery({
-    queryKey: ["accommodation-prev", id],
-    queryFn: async () => {
-      if (!id) return null;
-      const { data } = await supabase
-        .from("accommodations")
-        .select("id")
-        .lt("id", id)
-        .order("id", { ascending: false })
-        .limit(1);
-      return data?.[0]?.id || null;
-    },
-  });
-
-  const { data: nextIdData } = useQuery({
-    queryKey: ["accommodation-next", id],
-    queryFn: async () => {
-      if (!id) return null;
-      const { data } = await supabase
-        .from("accommodations")
-        .select("id")
-        .gt("id", id)
-        .order("id", { ascending: true })
-        .limit(1);
-      return data?.[0]?.id || null;
-    },
-  });
 
   if (isLoading) {
     return (
