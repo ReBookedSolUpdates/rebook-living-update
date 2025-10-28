@@ -25,28 +25,37 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Hero - two column layout matching blog-launch structure */}
-      <section className="pt-20 md:pt-28">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
-                All‑in‑one Student Housing Hub
-              </h1>
-            </div>
-            <div className="flex flex-col items-start gap-6">
-              <p className="text-base md:text-lg text-muted-foreground max-w-md">
-                Smart search, curated listings, and NSFAS‑ready filters. Designed to help you find the perfect student home fast.
-              </p>
-              <div className="flex items-center gap-3">
-                <Link to="/browse">
-                  <Button size="lg" className="rounded-full px-8">
-                    Explore Listings
-                  </Button>
-                </Link>
-                <a href="#search" className="text-sm font-medium text-primary hover:underline">
-                  Advanced search
-                </a>
+      {/* Hero - background house image */}
+      <section className="relative h-[65vh] md:h-[72vh]">
+        <img
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"
+          alt="House exterior"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-primary/30 to-transparent" />
+
+        <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
+          <div className="w-full max-w-4xl">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight text-white">
+                  All‑in‑one Student Housing Hub
+                </h1>
+              </div>
+              <div className="flex flex-col items-start gap-6">
+                <p className="text-base md:text-lg text-white/90 max-w-md">
+                  Smart search, curated listings, and NSFAS‑ready filters. Designed to help you find the perfect student home fast.
+                </p>
+                <div className="flex items-center gap-3">
+                  <Link to="/browse">
+                    <Button size="lg" className="rounded-full px-8 bg-white text-primary">
+                      Explore Listings
+                    </Button>
+                  </Link>
+                  <a href="#search" className="text-sm font-medium text-white/90 hover:underline">
+                    Advanced search
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -85,6 +94,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <div className="h-20 md:h-28 bg-gradient-to-b from-transparent to-background pointer-events-none" />
 
       {/* Section header similar to "Workflow Templates" */}
       <section className="py-12 md:py-16">
