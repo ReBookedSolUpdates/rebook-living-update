@@ -220,6 +220,35 @@ const ListingDetail = () => {
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle>Google Maps</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Map placeholder</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Google Reviews</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Reviews placeholder</div>
+              </CardContent>
+            </Card>
+
+            {listing.website && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Website</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <a href={listing.website} target="_blank" rel="noreferrer" className="text-primary underline">{listing.website}</a>
+                </CardContent>
+              </Card>
+            )}
+
           </div>
         </div>
       </div>
