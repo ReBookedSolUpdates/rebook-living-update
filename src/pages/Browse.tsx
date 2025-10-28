@@ -73,13 +73,13 @@ const Browse = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold mb-4">Browse Accommodation</h1>
-            <div className={`lg:hidden transition-all duration-500 flex ${showFilters ? 'justify-end' : 'justify-center'}`}>
-              <button onClick={() => setShowFilters((v) => !v)} className="text-sm text-primary underline">
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
-              </button>
-            </div>
           </div>
           <SearchBar compact />
+          <div className={`lg:hidden transition-all duration-500 flex mt-4 ${showFilters ? 'justify-end' : 'justify-center'}`}>
+            <button onClick={() => setShowFilters((v) => !v)} className="text-sm text-primary underline">
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
