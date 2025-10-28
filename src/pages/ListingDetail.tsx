@@ -111,21 +111,7 @@ const ListingDetail = () => {
               </Badge>
             )}
 
-            {/* Prev / Next arrows */}
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              {prevIdData && (
-                <Link to={`/listing/${prevIdData}`}>
-                  <button className="p-3 rounded-full bg-white/90 shadow">◀</button>
-                </Link>
-              )}
-            </div>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              {nextIdData && (
-                <Link to={`/listing/${nextIdData}`}>
-                  <button className="p-3 rounded-full bg-white/90 shadow">▶</button>
-                </Link>
-              )}
-            </div>
+            {/* navigation arrows removed per request */}
           </div>
         </div>
 
