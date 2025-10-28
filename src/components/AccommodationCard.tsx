@@ -1,8 +1,9 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Users, CheckCircle, Heart } from "lucide-react";
+import { MapPin, Star, Users, CheckCircle, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 
 interface AccommodationCardProps {
   id: string;
@@ -13,9 +14,10 @@ interface AccommodationCardProps {
   city: string;
   monthlyCost: number;
   rating: number;
-  imageUrl: string;
   nsfasAccredited: boolean;
   genderPolicy: string;
+  website?: string | null;
+  amenities?: string[];
 }
 
 const AccommodationCard = ({
@@ -27,15 +29,16 @@ const AccommodationCard = ({
   city,
   monthlyCost,
   rating,
-  imageUrl,
   nsfasAccredited,
   genderPolicy,
+  website,
+  amenities = [],
 }: AccommodationCardProps) => {
   return (
     <Card className="overflow-hidden rounded-2xl hover:shadow-lg transition-shadow">
-      <div className="relative h-20 flex items-center px-4" style={{ background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--secondary)), hsl(var(--muted)))' }}>
+      <div className="relative h-20 flex items-center px-4" style={{ background: 'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary-hover)) 100%)' }}>
         {nsfasAccredited && (
-          <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
+          <Badge className="absolute left-3" style={{ top: -8 }}>
             <CheckCircle className="w-3 h-3 mr-1" />
             NSFAS
           </Badge>
@@ -45,10 +48,6 @@ const AccommodationCard = ({
           <h3 className="font-semibold text-lg leading-tight text-white">{propertyName}</h3>
           <p className="text-xs text-white/90">{type} • {city}</p>
         </div>
-
-        <button aria-label="Save listing" className="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow">
-          <Heart className="w-4 h-4 text-primary" />
-        </button>
       </div>
 
       <CardContent className="p-4">
@@ -58,11 +57,25 @@ const AccommodationCard = ({
               <MapPin className="w-4 h-4 text-primary" />
               <span>{address || city}</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{university}</p>
+            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+              {university}
+              {nsfasAccredited && (
+                <span title={`NSFAS accredited for ${university}`} className="inline-flex items-center ml-2 text-accent">
+                  <CheckCircle className="w-4 h-4" />
+                </span>
+              )}
+            </p>
+
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1"><Users className="w-4 h-4 text-primary" />{genderPolicy || 'Mixed'}</div>
-              <div className="flex items-center gap-1"><Star className="w-4 h-4 text-accent" />{rating.toFixed(1)}</div>
+              <div className="flex items-center gap-1"><Star className="w-4 h-4 text-accent" />{rating?.toFixed(1)}</div>
             </div>
+
+            {amenities.length > 0 && (
+              <div className="mt-3 text-sm text-muted-foreground">
+                <strong className="text-sm">Amenities:</strong> {amenities.slice(0,3).join(", ")}{amenities.length > 3 ? '...' : ''}
+              </div>
+            )}
           </div>
 
           <div className="text-right">
@@ -73,14 +86,41 @@ const AccommodationCard = ({
       </CardContent>
 
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
-        <Link to={`/listing/${id}`}>
-          <Button variant="default" size="sm" className="bg-primary hover:bg-primary-hover rounded-full">
-            View Details
-          </Button>
-        </Link>
-        <Link to={`/listing/${id}`} className="text-sm text-muted-foreground">
-          Contact Host
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to={`/listing/${id}`}>
+            <Button variant="default" size="sm" className="bg-primary hover:bg-primary-hover rounded-full">
+              View Details
+            </Button>
+          </Link>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="rounded-full">
+                <Eye className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{propertyName} — Info</DialogTitle>
+                <DialogDescription>
+                  <p className="mt-2">Gender policy: {genderPolicy || 'Mixed'}</p>
+                  <p className="mt-2">NSFAS accredited: {nsfasAccredited ? 'Yes' : 'No'}</p>
+                  <p className="mt-2">University: {university}</p>
+                  {amenities.length > 0 && <p className="mt-2">Amenities: {amenities.join(', ')}</p>}
+                  {website && (
+                    <p className="mt-2">Website: <a href={website} target="_blank" rel="noreferrer" className="text-primary underline">Visit</a></p>
+                  )}
+                  <p className="mt-4 text-sm text-muted-foreground">For bursaries and university info see: <a href="https://www.rebookedsolutions.co.za/university-info" target="_blank" rel="noreferrer" className="text-primary underline">University Info</a></p>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 flex justify-end">
+                <DialogClose asChild>
+                  <Button>Close</Button>
+                </DialogClose>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardFooter>
     </Card>
   );
