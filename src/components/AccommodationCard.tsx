@@ -94,27 +94,27 @@ const AccommodationCard = ({
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="rounded-full border border-white/20 w-8 h-8 flex items-center justify-center">
-                <Info className="w-4 h-4 text-white" />
+              <Button variant="ghost" size="sm" className="rounded-full border border-primary/20 w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10">
+                <Info className="w-4 h-4 text-primary" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-sm w-full">
+            <DialogContent className="max-w-sm w-full rounded-xl p-4">
               <DialogHeader>
                 <DialogTitle className="text-base">{propertyName} — Info</DialogTitle>
                 <DialogDescription>
-                  <p className="mt-2">Gender policy: {genderPolicy || 'Mixed'}</p>
-                  <p className="mt-2">NSFAS accredited: {nsfasAccredited ? 'Yes' : 'No'}</p>
-                  <p className="mt-2">University: {university}</p>
-                  {amenities.length > 0 && <p className="mt-2">Amenities: {amenities.join(', ')}</p>}
+                  <p className="mt-2 text-sm">Gender policy: <span className="font-medium">{genderPolicy || 'Mixed'}</span></p>
+                  <p className="mt-2 text-sm">NSFAS accredited: <span className="font-medium">{nsfasAccredited ? 'Yes' : 'No'}</span></p>
+                  <p className="mt-2 text-sm">University: <span className="font-medium">{university}</span></p>
+                  {amenities.length > 0 && <p className="mt-2 text-sm">Amenities: <span className="font-medium">{amenities.join(', ')}</span></p>}
                   {website && (
-                    <p className="mt-2">Website: <a href={website} target="_blank" rel="noreferrer" className="text-primary underline">Visit</a></p>
+                    <p className="mt-2 text-sm">Website: <a href={website} target="_blank" rel="noreferrer" className="text-primary underline">Visit</a></p>
                   )}
-                  <p className="mt-4 text-sm text-muted-foreground">For bursaries and university info see: <a href="https://www.rebookedsolutions.co.za/university-info" target="_blank" rel="noreferrer" className="text-primary underline">University Info</a></p>
+                  <p className="mt-4 text-xs text-muted-foreground">For bursaries and university info see: <a href="https://www.rebookedsolutions.co.za/university-info" target="_blank" rel="noreferrer" className="text-primary underline">University Info</a></p>
                 </DialogDescription>
               </DialogHeader>
               <div className="mt-4 flex justify-end">
                 <DialogClose asChild>
-                  <Button>Close</Button>
+                  <Button className="bg-primary text-white">Close</Button>
                 </DialogClose>
               </div>
             </DialogContent>
