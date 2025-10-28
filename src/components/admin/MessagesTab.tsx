@@ -21,14 +21,21 @@ const MessagesTab = () => {
   const { data: messages, isLoading } = useQuery({
     queryKey: ["admin-messages"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("messages")
         .select("*")
         .order("created_at", { ascending: false });
       
+      const { data, error } = await query;
+      
       if (error) throw error;
       return data;
     },
+  });
+
+  const filteredMessages = messages?.filter((msg: any) => {
+    if (statusFilter === "all") return true;
+    return msg.status === statusFilter;
   });
 
   const deleteMutation = useMutation({
