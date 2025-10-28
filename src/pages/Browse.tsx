@@ -75,8 +75,8 @@ const Browse = () => {
             <h1 className="text-3xl font-bold mb-4">Browse Accommodation</h1>
           </div>
           <SearchBar compact />
-          <div className={`lg:hidden transition-all duration-500 flex mt-4 ${showFilters ? 'justify-end' : 'justify-center'}`}>
-            <button onClick={() => setShowFilters((v) => !v)} className="text-sm text-primary underline">
+          <div className="lg:hidden flex justify-center mt-4">
+            <button onClick={() => setShowFilters((v) => !v)} className="text-sm text-primary underline px-3 py-2 bg-white rounded-md shadow-sm">
               {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
           </div>
