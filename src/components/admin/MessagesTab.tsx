@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,9 +15,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MessagesTab = () => {
   const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ["admin-messages"],
@@ -82,6 +91,18 @@ const MessagesTab = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Messages</h2>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Messages</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="in-progress">In Progress</SelectItem>
+            <SelectItem value="resolved">Resolved</SelectItem>
+            <SelectItem value="ignored">Ignored</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="border rounded-lg overflow-x-auto">
@@ -97,7 +118,7 @@ const MessagesTab = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {messages?.map((message) => (
+            {filteredMessages?.map((message) => (
               <TableRow key={message.id}>
                 <TableCell>
                   <Button
