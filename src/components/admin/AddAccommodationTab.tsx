@@ -48,24 +48,32 @@ const AddAccommodationTab = () => {
       const acc: any = {};
       
       headers.forEach((header, index) => {
-        const value = values[index];
+        let value = values[index]?.trim();
         
-        // Skip database-generated fields if empty
+        // Treat "NULL" string as null
+        if (value === "NULL" || value === "null" || value === "") {
+          value = null;
+        }
+        
+        // Skip database-generated fields completely if null/empty
         if (!value && (header === "id" || header === "created_at" || header === "updated_at")) {
           return;
         }
         
         // Handle special fields
         if (header === "amenities" || header === "certified_universities" || header === "image_urls") {
-          acc[header] = value ? value.split("|").map(v => v.trim()) : [];
+          acc[header] = value ? value.split("|").map(v => v.trim()).filter(Boolean) : [];
         } else if (header === "monthly_cost" || header === "rooms_available" || header === "units") {
           acc[header] = value ? parseInt(value) : null;
         } else if (header === "rating") {
           acc[header] = value ? parseFloat(value) : 0;
         } else if (header === "nsfas_accredited") {
-          acc[header] = value?.toLowerCase() === "true" || value === "1";
+          acc[header] = value?.toLowerCase() === "true";
+        } else if (header === "id") {
+          // Never set id field - let database generate it
+          return;
         } else {
-          acc[header] = value || null;
+          acc[header] = value;
         }
       });
 
