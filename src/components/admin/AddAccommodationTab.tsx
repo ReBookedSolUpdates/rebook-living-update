@@ -50,6 +50,11 @@ const AddAccommodationTab = () => {
       headers.forEach((header, index) => {
         const value = values[index];
         
+        // Skip database-generated fields if empty
+        if (!value && (header === "id" || header === "created_at" || header === "updated_at")) {
+          return;
+        }
+        
         // Handle special fields
         if (header === "amenities" || header === "certified_universities" || header === "image_urls") {
           acc[header] = value ? value.split("|").map(v => v.trim()) : [];
