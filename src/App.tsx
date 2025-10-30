@@ -23,13 +23,13 @@ const App = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-      const { subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_IN" && session) {
           navigate("/profile");
         }
       });
 
-      return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe && subscription.unsubscribe();
     }, [navigate]);
 
     return null;
