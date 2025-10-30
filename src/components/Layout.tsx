@@ -99,6 +99,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <li><Link to="/browse" className="text-muted-foreground hover:text-primary">Browse Listings</Link></li>
                 <li><Link to="/about" className="text-muted-foreground hover:text-primary">About Us</Link></li>
                 <li><Link to="/contact" className="text-muted-foreground hover:text-primary">Contact</Link></li>
+                <li><Link to="/profile" className="text-muted-foreground hover:text-primary">My Profile</Link></li>
               </ul>
             </div>
 
