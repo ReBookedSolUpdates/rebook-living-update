@@ -60,7 +60,7 @@ const SearchBar = ({ compact = false }) => {
 
   return (
     <div className="bg-card p-6 rounded-xl shadow-lg border">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
         <div className="space-y-2 col-span-1 md:col-span-2">
           <label className="text-sm font-medium flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
