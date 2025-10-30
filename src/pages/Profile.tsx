@@ -67,7 +67,7 @@ const Profile = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => subscription.unsubscribe && subscription.unsubscribe();
   }, [navigate]);
 
   const { data: profile } = useQuery({
