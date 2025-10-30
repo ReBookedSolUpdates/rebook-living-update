@@ -130,13 +130,30 @@ const Profile = () => {
     queryKey: ["recommended", university],
     queryFn: async () => {
       if (!university) return [];
+
+      // get count for active accommodations for the university
+      const { data: countData, count, error: countError } = await supabase
+        .from("accommodations")
+        .select("id", { count: "exact" })
+        .eq("status", "active")
+        .eq("university", university);
+
+      if (countError) throw countError;
+      const total = count || 0;
+      if (total === 0) return [];
+
+      // rotate hourly using hour index
+      const hourIndex = Math.floor(Date.now() / (60 * 60 * 1000));
+      const start = hourIndex % total;
+      const end = Math.min(start + 4, total - 1); // show up to 5
+
       const { data, error } = await supabase
         .from("accommodations")
         .select("*")
         .eq("status", "active")
         .eq("university", university)
-        .limit(6);
-      
+        .range(start, end);
+
       if (error) throw error;
       return data;
     },
