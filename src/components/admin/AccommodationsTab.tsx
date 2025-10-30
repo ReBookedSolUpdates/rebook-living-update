@@ -8,9 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Trash2, Eye, Search } from "lucide-react";
+import { Pencil, Trash2, Eye, Search, CheckSquare, Square, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const AccommodationsTab = () => {
   const queryClient = useQueryClient();
@@ -18,6 +20,10 @@ const AccommodationsTab = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedAccommodation, setSelectedAccommodation] = useState<any>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [universityDeleteDialogOpen, setUniversityDeleteDialogOpen] = useState(false);
+  const [selectedUniversity, setSelectedUniversity] = useState("");
 
   const { data: accommodations, isLoading } = useQuery({
     queryKey: ["admin-accommodations"],
@@ -87,6 +93,46 @@ const AccommodationsTab = () => {
     },
   });
 
+  const batchDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from("accommodations")
+        .delete()
+        .in("id", ids);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-accommodations"] });
+      toast.success(`Successfully deleted ${selectedIds.length} accommodations`);
+      setSelectedIds([]);
+      setBatchDeleteDialogOpen(false);
+    },
+    onError: () => {
+      toast.error("Failed to delete accommodations");
+    },
+  });
+
+  const deleteByUniversityMutation = useMutation({
+    mutationFn: async (university: string) => {
+      const { error } = await supabase
+        .from("accommodations")
+        .delete()
+        .eq("university", university);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-accommodations"] });
+      toast.success(`Successfully deleted all accommodations from ${selectedUniversity}`);
+      setSelectedUniversity("");
+      setUniversityDeleteDialogOpen(false);
+    },
+    onError: () => {
+      toast.error("Failed to delete accommodations");
+    },
+  });
+
   const handleEdit = (acc: any) => {
     setSelectedAccommodation(acc);
     setEditDialogOpen(true);
@@ -108,6 +154,26 @@ const AccommodationsTab = () => {
     acc.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const universities = [...new Set(accommodations?.map(acc => acc.university).filter(Boolean))];
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredAccommodations?.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredAccommodations?.map(acc => acc.id) || []);
+    }
+  };
+
+  const toggleSelectId = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const getUniversityCount = (university: string) => {
+    return accommodations?.filter(acc => acc.university === university).length || 0;
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -119,20 +185,61 @@ const AccommodationsTab = () => {
         <p className="text-sm text-muted-foreground">{accommodations?.length || 0} total</p>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search accommodations..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search accommodations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        {selectedIds.length > 0 && (
+          <Button
+            variant="destructive"
+            onClick={() => setBatchDeleteDialogOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Selected ({selectedIds.length})
+          </Button>
+        )}
+      </div>
+
+      <div className="flex gap-4 items-center">
+        <Select value={selectedUniversity} onValueChange={setSelectedUniversity}>
+          <SelectTrigger className="w-[300px]">
+            <SelectValue placeholder="Select university to delete all" />
+          </SelectTrigger>
+          <SelectContent>
+            {universities.map((uni) => (
+              <SelectItem key={uni} value={uni}>
+                {uni} ({getUniversityCount(uni)} properties)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedUniversity && (
+          <Button
+            variant="destructive"
+            onClick={() => setUniversityDeleteDialogOpen(true)}
+          >
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Delete All from {selectedUniversity}
+          </Button>
+        )}
       </div>
 
       <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={selectedIds.length === filteredAccommodations?.length && filteredAccommodations?.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead>Property Name</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>City</TableHead>
@@ -145,6 +252,12 @@ const AccommodationsTab = () => {
           <TableBody>
             {filteredAccommodations?.map((acc) => (
               <TableRow key={acc.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedIds.includes(acc.id)}
+                    onCheckedChange={() => toggleSelectId(acc.id)}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">{acc.property_name}</TableCell>
                 <TableCell>{acc.type}</TableCell>
                 <TableCell>{acc.city}</TableCell>
@@ -417,8 +530,50 @@ const AccommodationsTab = () => {
               </div>
             </div>
           </div>
-        </DialogContent>
+          </DialogContent>
       </Dialog>
+
+      {/* Batch Delete Confirmation */}
+      <AlertDialog open={batchDeleteDialogOpen} onOpenChange={setBatchDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.length} Accommodations?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete {selectedIds.length} selected accommodations from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => batchDeleteMutation.mutate(selectedIds)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* University Delete Confirmation */}
+      <AlertDialog open={universityDeleteDialogOpen} onOpenChange={setUniversityDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete All from {selectedUniversity}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete all {getUniversityCount(selectedUniversity)} accommodations from {selectedUniversity}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteByUniversityMutation.mutate(selectedUniversity)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
