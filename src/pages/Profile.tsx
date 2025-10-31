@@ -275,7 +275,7 @@ const Profile = () => {
         </Card>
 
         <Tabs defaultValue="saved" className="space-y-6">
-          <TabsList className="w-full bg-gray-50 border border-gray-200 rounded-xl p-1 flex justify-between sm:justify-start gap-2">
+          <TabsList className="w-full bg-gray-50 border border-gray-200 rounded-xl p-1 flex flex-wrap gap-2">
             <TabsTrigger
               value="saved"
               className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
