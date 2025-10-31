@@ -98,7 +98,7 @@ const AccommodationCard = ({
               {imageUrls.map((src, idx) => (
                 <CarouselItem key={idx}>
                   <div className="w-full h-48 overflow-hidden bg-muted">
-                    <img src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+                    <img loading="lazy" src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
                   </div>
                 </CarouselItem>
               ))}
