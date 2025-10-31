@@ -489,6 +489,24 @@ const ListingDetail = () => {
               </CardContent>
             </Card>
 
+            {photos && photos.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Photos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-2">
+                    {photos.slice(0, 6).map((src, i) => (
+                      <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full h-20 overflow-hidden rounded-md">
+                        <img src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-full" />
+                      </button>
+                    ))}
+                  </div>
+                  {photos.length > 6 && <div className="text-sm text-muted-foreground mt-2">Showing 6 of {photos.length} photos</div>}
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle>Google Reviews</CardTitle>
@@ -513,6 +531,14 @@ const ListingDetail = () => {
                 <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
               </CardContent>
             </Card>
+
+            <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+              <DialogContent className="max-w-3xl w-[90vw]">
+                <div className="p-2">
+                  <img src={photos && photos[selectedPhoto]} alt={`Photo ${selectedPhoto+1}`} className="w-full h-[60vh] object-contain" />
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {listing.website && (
               <Card>
