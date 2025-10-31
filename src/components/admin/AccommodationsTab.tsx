@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pencil, Trash2, Eye, Search, CheckSquare, Square, AlertTriangle } from "lucide-react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -148,13 +149,63 @@ const AccommodationsTab = () => {
     updateMutation.mutate(selectedAccommodation);
   };
 
-  const filteredAccommodations = accommodations?.filter((acc) =>
-    acc.property_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAccommodations = useMemo(() => {
+    if (!accommodations) return [];
+    const q = (searchQuery || "").trim().toLowerCase();
+    if (!q) return accommodations;
+
+    return accommodations.filter((acc: any) => {
+      const hay = [acc.property_name, acc.city, acc.type, acc.university, acc.address]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      if (hay.includes(q)) return true;
+
+      // numeric search (price/id)
+      if (String(acc.monthly_cost || '').includes(q)) return true;
+      if (String(acc.id || '').toLowerCase().includes(q)) return true;
+
+      return false;
+    });
+  }, [accommodations, searchQuery]);
 
   const universities = [...new Set(accommodations?.map(acc => acc.university).filter(Boolean))];
+
+  const duplicatesMap = useMemo(() => {
+    const map = new Map<string, any[]>();
+    accommodations?.forEach((acc: any) => {
+      const key = (acc.property_name || "").trim().toLowerCase();
+      if (!key) return;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(acc);
+    });
+    return map;
+  }, [accommodations]);
+
+  const duplicateEntries = useMemo(() => Array.from(duplicatesMap.entries()).filter(([, arr]) => arr.length > 1), [duplicatesMap]);
+
+  const [selectedDuplicateKey, setSelectedDuplicateKey] = useState<string | null>(null);
+  const [duplicateDeleteDialogOpen, setDuplicateDeleteDialogOpen] = useState(false);
+
+  const deleteDuplicatesMutation = useMutation({
+    mutationFn: async ({ key, keepId }: { key: string; keepId: string }) => {
+      const items = duplicatesMap.get(key) || [];
+      const idsToDelete = items.map((i: any) => i.id).filter((id: string) => id !== keepId);
+      if (idsToDelete.length === 0) return;
+      const { error } = await supabase.from("accommodations").delete().in("id", idsToDelete);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-accommodations"] });
+      toast.success("Deleted duplicates successfully");
+      setDuplicateDeleteDialogOpen(false);
+      setSelectedDuplicateKey(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete duplicates");
+    },
+  });
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredAccommodations?.length) {
@@ -195,6 +246,7 @@ const AccommodationsTab = () => {
             className="pl-9"
           />
         </div>
+        <div className="text-sm text-muted-foreground mr-4">Showing {filteredAccommodations?.length || 0} / {accommodations?.length || 0}</div>
         {selectedIds.length > 0 && (
           <Button
             variant="destructive"
@@ -229,6 +281,34 @@ const AccommodationsTab = () => {
           </Button>
         )}
       </div>
+
+      {duplicateEntries.length > 0 && (
+        <div className="mb-4 p-4 bg-yellow-50 border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="font-semibold">Duplicate Properties Detected</h3>
+              <p className="text-sm text-muted-foreground">Multiple accommodations share the same property name. You can remove duplicates while keeping one record.</p>
+            </div>
+            <div className="text-sm text-muted-foreground">{duplicateEntries.length} duplicated names</div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {duplicateEntries.map(([key, list]) => (
+              <div key={key} className="flex items-center justify-between bg-white p-3 rounded border">
+                <div>
+                  <div className="font-medium">{list[0].property_name}</div>
+                  <div className="text-xs text-muted-foreground">{list.length} entries</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setSelectedDuplicateKey(key); setDuplicateDeleteDialogOpen(true); }}>
+                    Delete duplicates
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="border rounded-lg overflow-x-auto">
         <Table>
@@ -549,6 +629,33 @@ const AccommodationsTab = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Duplicate Delete Confirmation */}
+      <AlertDialog open={duplicateDeleteDialogOpen} onOpenChange={setDuplicateDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete duplicate entries?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will delete all duplicate records for the selected property name but keep one record. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!selectedDuplicateKey) return;
+                const items = duplicatesMap.get(selectedDuplicateKey) || [];
+                const keepId = items[0]?.id;
+                if (!keepId) return;
+                deleteDuplicatesMutation.mutate({ key: selectedDuplicateKey, keepId });
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Duplicates
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

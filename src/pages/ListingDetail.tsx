@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Star, Home, Users, Wifi, Phone, Mail, CheckCircle, ArrowLeft, Flag } from "lucide-react";
-import { useState } from "react";
+import { MapPin, Star, Home, Users, Wifi, Phone, Mail, CheckCircle, ArrowLeft, Flag, Heart } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 const ListingDetail = () => {
@@ -25,6 +25,53 @@ const ListingDetail = () => {
     details: "" 
   });
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savingFavorite, setSavingFavorite] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (!userId) return;
+        const { data, error } = await supabase.from("favorites").select("*").eq("user_id", userId).eq("accommodation_id", id).single();
+        if (!mounted) return;
+        if (!error && data) setIsSaved(true);
+      } catch (err) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [id]);
+
+  const toggleFavorite = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+      window.location.href = '/auth';
+      return;
+    }
+
+    setSavingFavorite(true);
+    try {
+      if (!isSaved) {
+        const { error } = await supabase.from('favorites').insert({ user_id: userId, accommodation_id: id });
+        if (error) throw error;
+        setIsSaved(true);
+        toast.success('Saved to your favorites');
+      } else {
+        const { error } = await supabase.from('favorites').delete().eq('user_id', userId).eq('accommodation_id', id);
+        if (error) throw error;
+        setIsSaved(false);
+        toast.success('Removed from favorites');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update favorites');
+    } finally {
+      setSavingFavorite(false);
+    }
+  };
 
   const { data: listing, isLoading } = useQuery({
     queryKey: ["accommodation", id],
@@ -81,6 +128,132 @@ const ListingDetail = () => {
     },
   });
 
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const largeMapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
+  const [expandOpen, setExpandOpen] = useState(false);
+  const [reviews, setReviews] = useState<any[] | null>(null);
+  const [photos, setPhotos] = useState<string[] | null>(null);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
+  const [placeUrl, setPlaceUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
+    if (!apiKey) return;
+
+    const existing = document.getElementById('google-maps-script');
+    if (existing) {
+      initMap();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => initMap();
+    script.onerror = () => console.warn('Failed to load Google Maps script');
+    document.head.appendChild(script);
+
+    function initMap() {
+      try {
+        const google = (window as any).google;
+        if (!google || !mapRef.current) return;
+
+        const map = new google.maps.Map(mapRef.current, {
+          center: { lat: -33.9249, lng: 18.4241 },
+          zoom: 15,
+          mapTypeId: mapType,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            mapTypeIds: ['roadmap', 'satellite', 'hybrid'],
+          },
+        });
+
+        mapInstanceRef.current = map;
+
+        const service = new google.maps.places.PlacesService(map);
+        const addressQuery = [listing?.property_name, listing?.address, listing?.city, listing?.province].filter(Boolean).join(', ');
+
+        service.findPlaceFromQuery({
+          query: addressQuery || listing?.property_name || listing?.address || listing?.city,
+          fields: ['place_id', 'geometry', 'name', 'formatted_address'],
+        }, (results: any, status: any) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
+            const place = results[0];
+            if (place.geometry && place.geometry.location) {
+              map.setCenter(place.geometry.location);
+              map.setZoom(17);
+              markerRef.current = new google.maps.Marker({ map, position: place.geometry.location, title: place.name });
+            }
+
+            service.getDetails({ placeId: place.place_id, fields: ['reviews', 'rating', 'name', 'photos', 'url'] }, (detail: any, dStatus: any) => {
+              if (dStatus === google.maps.places.PlacesServiceStatus.OK) {
+                if (detail && detail.reviews) {
+                  setReviews(detail.reviews.slice(0, 5));
+                }
+
+                if (detail && detail.photos && detail.photos.length > 0) {
+                  try {
+                    const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
+                    setPhotos(urls);
+                  } catch (err) {
+                    console.warn('Failed to extract photo urls', err);
+                  }
+                }
+
+                if (detail && detail.url) {
+                  setPlaceUrl(detail.url);
+                }
+              }
+            });
+          }
+        });
+      } catch (err) {
+        console.warn('Google Maps init error', err);
+      }
+    }
+
+    // cleanup not strictly necessary
+    return () => {};
+  }, [listing]);
+
+  // Sync map type when changed
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setMapTypeId(mapType);
+    }
+  }, [mapType]);
+
+  // Initialize large map when expand dialog opens
+  useEffect(() => {
+    if (!expandOpen) return;
+    const google = (window as any).google;
+    if (!google || !largeMapRef.current || !mapInstanceRef.current) return;
+
+    const center = mapInstanceRef.current.getCenter ? mapInstanceRef.current.getCenter() : null;
+    const zoom = Math.max(mapInstanceRef.current.getZoom ? mapInstanceRef.current.getZoom() : 15, 16);
+
+    const largeMap = new google.maps.Map(largeMapRef.current, {
+      center: center || { lat: -33.9249, lng: 18.4241 },
+      zoom,
+      mapTypeId: mapType,
+      mapTypeControl: true,
+      streetViewControl: true,
+    });
+
+    if (markerRef.current && markerRef.current.getPosition) {
+      new google.maps.Marker({ map: largeMap, position: markerRef.current.getPosition(), title: markerRef.current.getTitle ? markerRef.current.getTitle() : undefined });
+    }
+
+    // No cleanup necessary — Google handles DOM, but remove listeners if added in future
+  }, [expandOpen]);
+
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!reportForm.reason) {
@@ -94,7 +267,7 @@ const ListingDetail = () => {
   if (isLoading) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="animate-pulse">
             <div className="h-96 bg-muted rounded-lg mb-8"></div>
             <div className="h-8 bg-muted rounded w-1/2 mb-4"></div>
@@ -108,7 +281,7 @@ const ListingDetail = () => {
   if (!listing) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-8 text-center">
+        <div className="max-w-7xl mx-auto px-6 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Listing not found</h1>
           <Link to="/browse">
             <Button>Back to Browse</Button>
@@ -120,7 +293,7 @@ const ListingDetail = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <Link to="/browse">
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -131,90 +304,103 @@ const ListingDetail = () => {
         {/* Header band (multicolor) */}
         <div className="mb-6 relative">
           <div className="rounded-lg flex flex-col md:flex-row items-start md:items-center gap-3 p-4" style={{ background: 'hsl(var(--primary))' }}>
-            <div className="w-10 h-10 rounded-md bg-white/10 flex items-center justify-center mr-0 md:mr-3 flex-shrink-0">
-              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z" />
-              </svg>
-            </div>
-            <div className="text-white flex-1 min-w-0">
-              <h2 className="font-semibold text-lg md:text-xl truncate">{listing.property_name}</h2>
-              <p className="text-sm text-white/90 truncate">{listing.type} • {listing.city}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {listing.nsfas_accredited && (
-                <Badge className="bg-accent text-accent-foreground">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  NSFAS Accredited
-                </Badge>
-              )}
-              <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
-                    <Flag className="w-4 h-4 mr-2" />
-                    Report
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Report Listing</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleReportSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="reason">Reason for reporting *</Label>
-                      <Select
-                        value={reportForm.reason}
-                        onValueChange={(value) => setReportForm({ ...reportForm, reason: value })}
-                        required
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a reason" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Inaccurate Information">Inaccurate Information</SelectItem>
-                          <SelectItem value="Scam or Fraud">Scam or Fraud</SelectItem>
-                          <SelectItem value="Property No Longer Available">Property No Longer Available</SelectItem>
-                          <SelectItem value="Inappropriate Content">Inappropriate Content</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="report-details">Details</Label>
-                      <Textarea
-                        id="report-details"
-                        value={reportForm.details}
-                        onChange={(e) => setReportForm({ ...reportForm, details: e.target.value })}
-                        placeholder="Please provide more information about this report..."
-                        rows={4}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="reporter-name">Your Name (optional)</Label>
-                      <Input
-                        id="reporter-name"
-                        value={reportForm.reporter_name}
-                        onChange={(e) => setReportForm({ ...reportForm, reporter_name: e.target.value })}
-                        placeholder="John Doe"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="reporter-email">Your Email (optional)</Label>
-                      <Input
-                        id="reporter-email"
-                        type="email"
-                        value={reportForm.reporter_email}
-                        onChange={(e) => setReportForm({ ...reportForm, reporter_email: e.target.value })}
-                        placeholder="john@example.com"
-                      />
-                    </div>
-                    <Button type="submit" disabled={reportMutation.isPending}>
-                      {reportMutation.isPending ? "Submitting..." : "Submit Report"}
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
+          <div className="w-10 h-10 rounded-md bg-white/10 flex items-center justify-center mr-0 md:mr-3 flex-shrink-0">
+            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z" />
+            </svg>
           </div>
+          <div className="text-white flex-1 min-w-0">
+            <h2 className="font-semibold text-lg md:text-xl truncate">{listing.property_name}</h2>
+            <p className="text-sm text-white/90 truncate">{listing.type} • {listing.city}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {listing.nsfas_accredited && (
+              <Badge className="bg-accent text-accent-foreground">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                NSFAS Accredited
+              </Badge>
+            )}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFavorite}
+              className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/20 hover:bg-white/10 ${isSaved ? 'bg-white/10 text-red-500' : 'text-white/90'}`}
+              aria-pressed={isSaved}
+              title={isSaved ? 'Remove favorite' : 'Save favorite'}
+              disabled={savingFavorite}
+            >
+              <Heart className={`w-4 h-4 ${isSaved ? 'text-red-500' : 'text-white'}`} />
+            </Button>
+
+            <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Report Listing</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleReportSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="reason">Reason for reporting *</Label>
+                    <Select
+                      value={reportForm.reason}
+                      onValueChange={(value) => setReportForm({ ...reportForm, reason: value })}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a reason" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Inaccurate Information">Inaccurate Information</SelectItem>
+                        <SelectItem value="Scam or Fraud">Scam or Fraud</SelectItem>
+                        <SelectItem value="Property No Longer Available">Property No Longer Available</SelectItem>
+                        <SelectItem value="Inappropriate Content">Inappropriate Content</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="report-details">Details</Label>
+                    <Textarea
+                      id="report-details"
+                      value={reportForm.details}
+                      onChange={(e) => setReportForm({ ...reportForm, details: e.target.value })}
+                      placeholder="Please provide more information about this report..."
+                      rows={4}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="reporter-name">Your Name (optional)</Label>
+                    <Input
+                      id="reporter-name"
+                      value={reportForm.reporter_name}
+                      onChange={(e) => setReportForm({ ...reportForm, reporter_name: e.target.value })}
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="reporter-email">Your Email (optional)</Label>
+                    <Input
+                      id="reporter-email"
+                      type="email"
+                      value={reportForm.reporter_email}
+                      onChange={(e) => setReportForm({ ...reportForm, reporter_email: e.target.value })}
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  <Button type="submit" disabled={reportMutation.isPending}>
+                    {reportMutation.isPending ? "Submitting..." : "Submit Report"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -293,12 +479,78 @@ const ListingDetail = () => {
                     </ul>
                   </div>
                 )}
+
+                {listing.website && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Website</h3>
+                    <a href={listing.website} target="_blank" rel="noreferrer" className="text-primary underline">{listing.website}</a>
+                  </div>
+                )}
+
               </CardContent>
             </Card>
+
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Photos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {photos && photos.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {photos.map((src, i) => (
+                          <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full h-32 overflow-hidden rounded-md">
+                            <img loading="lazy" src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-full" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No photos available</div>
+                    )}
+                    {photos && photos.length > 6 && <div className="text-sm text-muted-foreground mt-2">Showing {Math.min(6, photos.length)} of {photos.length} photos</div>}
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Map</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}>
+                          {mapType === 'roadmap' ? 'Satellite' : 'Map'}
+                        </Button>
+                      </div>
+                      <div>
+                        <Dialog open={expandOpen} onOpenChange={setExpandOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="ghost">Expand Map</Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl w-[95vw] p-0">
+                            <div className="p-4">
+                              <DialogHeader>
+                                <DialogTitle>Map - {listing.property_name}</DialogTitle>
+                              </DialogHeader>
+                              <div ref={largeMapRef} className="h-[60vh] w-full rounded-md overflow-hidden bg-muted mt-4" />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </div>
+
+                    <div ref={mapRef} id="gmaps" className="h-64 w-full rounded-md overflow-hidden bg-muted" />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:sticky lg:top-24">
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center mb-6">
@@ -338,33 +590,56 @@ const ListingDetail = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Google Maps</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Map placeholder</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle>Google Reviews</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Reviews placeholder</div>
+                {reviews && reviews.length > 0 ? (
+                  <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                    {reviews.map((r: any, idx: number) => (
+                      <div key={idx} className="p-2 border rounded">
+                        <div className="flex items-start gap-3">
+                          {r.profile_photo_url ? (
+                            <img src={r.profile_photo_url} alt={r.author_name} className="w-10 h-10 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-muted" />
+                          )}
+
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="font-semibold">{r.author_name}</div>
+                              <div className="text-sm text-muted-foreground">{r.rating} ★</div>
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">{r.relative_time_description}</div>
+                            <p className="mt-2 text-sm">{r.text}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No reviews available</div>
+                )}
                 <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
+                {placeUrl && (
+                  <div className="mt-2">
+                    <a href={placeUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">View on Google Maps</a>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {listing.website && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Website</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <a href={listing.website} target="_blank" rel="noreferrer" className="text-primary underline">{listing.website}</a>
-                </CardContent>
-              </Card>
-            )}
+            <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+              <DialogContent className="max-w-3xl w-[90vw]">
+                <div className="p-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <Button variant="ghost" onClick={() => setSelectedPhoto(p => Math.max(0, p - 1))} disabled={selectedPhoto === 0}>Prev</Button>
+                    <div className="text-sm">{selectedPhoto + 1} / {photos?.length || 0}</div>
+                    <Button variant="ghost" onClick={() => setSelectedPhoto(p => Math.min((photos?.length || 1) - 1, p + 1))} disabled={photos && selectedPhoto >= photos.length - 1}>Next</Button>
+                  </div>
+                  <img loading="lazy" src={photos && photos[selectedPhoto]} alt={`Photo ${selectedPhoto+1}`} className="w-full h-[60vh] object-contain" />
+                </div>
+              </DialogContent>
+            </Dialog>
 
           </div>
         </div>

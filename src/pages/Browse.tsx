@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import AccommodationCard from "@/components/AccommodationCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
+import { useState, useEffect, useMemo } from "react";
 import { Info } from "lucide-react";
 
 const Browse = () => {
@@ -14,16 +14,41 @@ const Browse = () => {
   const location = searchParams.get("location") || "";
   const university = searchParams.get("university") || "";
   const maxCost = searchParams.get("maxCost") || "";
-  
+  const minRating = parseFloat(searchParams.get("minRating") || "") || 0;
+  const amenitiesParam = searchParams.get("amenities") || "";
+  const amenities = amenitiesParam ? amenitiesParam.split(",").map(s => s.trim()).filter(Boolean) : [];
+  const nsfasParam = searchParams.get("nsfas") === "true";
+
   const [sortBy, setSortBy] = useState("rating");
-  const [priceRange, setPriceRange] = useState([10000]);
   const [selectedGender, setSelectedGender] = useState<string>("all");
-  const [nsfasOnly, setNsfasOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 21;
 
+  const UNIVERSITY_CYCLE = [
+    "University of Cape Town",
+    "University of Johannesburg",
+    "University of Pretoria",
+    "Stellenbosch University",
+    "University of KwaZulu-Natal",
+    "University of the Witwatersrand",
+    "Rhodes University",
+    "North-West University",
+    "Tshwane University of Technology",
+    "Cape Peninsula University of Technology",
+  ];
+
+  const [cycleIndex, setCycleIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentPage !== 1) return;
+    const interval = setInterval(() => {
+      setCycleIndex(i => (i + 1) % UNIVERSITY_CYCLE.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [currentPage]);
+
   const { data: accommodations, isLoading } = useQuery({
-    queryKey: ["accommodations", location, university, maxCost, nsfasOnly, sortBy, priceRange, selectedGender],
+    queryKey: ["accommodations", location, university, maxCost, nsfasParam, sortBy, minRating, amenitiesParam, selectedGender],
     queryFn: async () => {
       let query = supabase
         .from("accommodations")
@@ -31,7 +56,7 @@ const Browse = () => {
         .eq("status", "active");
 
       if (location) {
-        query = query.or(`city.ilike.%${location}%,province.ilike.%${location}%,address.ilike.%${location}%`);
+        query = query.or(`property_name.ilike.%${location}%,city.ilike.%${location}%,province.ilike.%${location}%,address.ilike.%${location}%`);
       }
 
       if (university) {
@@ -42,12 +67,16 @@ const Browse = () => {
         query = query.lte("monthly_cost", parseInt(maxCost));
       }
 
-      if (priceRange[0] < 10000) {
-        query = query.lte("monthly_cost", priceRange[0]);
+      if (nsfasParam) {
+        query = query.eq("nsfas_accredited", true);
       }
 
-      if (nsfasOnly) {
-        query = query.eq("nsfas_accredited", true);
+      if (minRating > 0) {
+        query = query.gte("rating", minRating);
+      }
+
+      if (amenities.length > 0) {
+        query = query.contains("amenities", amenities);
       }
 
       if (selectedGender && selectedGender !== "all") {
@@ -74,6 +103,15 @@ const Browse = () => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const displayedAccommodations = useMemo(() => {
+    if (!paginatedAccommodations) return [];
+    const copy = [...paginatedAccommodations];
+    if (currentPage === 1 && copy.length > 0) {
+      copy[0] = { ...copy[0], university: UNIVERSITY_CYCLE[cycleIndex] };
+    }
+    return copy;
+  }, [paginatedAccommodations, currentPage, cycleIndex]);
 
   const renderPaginationItems = () => {
     const items = [];
@@ -139,7 +177,7 @@ const Browse = () => {
             ) : paginatedAccommodations && paginatedAccommodations.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedAccommodations.map((accommodation) => (
+                  {displayedAccommodations.map((accommodation) => (
                     <AccommodationCard
                       key={accommodation.id}
                       id={accommodation.id}
@@ -154,6 +192,7 @@ const Browse = () => {
                       genderPolicy={accommodation.gender_policy || ""}
                       website={accommodation.website || null}
                       amenities={accommodation.amenities || []}
+                      imageUrls={accommodation.image_urls || []}
                     />
                   ))}
                 </div>
