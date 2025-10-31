@@ -177,6 +177,7 @@ const Index = () => {
                   genderPolicy={listing.gender_policy || ""}
                   website={listing.website || null}
                   amenities={listing.amenities || []}
+                  imageUrls={listing.image_urls || []}
                 />
               ))}
             </div>
