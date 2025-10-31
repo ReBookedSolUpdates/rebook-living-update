@@ -118,9 +118,9 @@ const Profile = () => {
         .from("favorites")
         .select("accommodation_id, accommodations(*)")
         .eq("user_id", user.id);
-      
+
       if (error) throw error;
-      return data.map(f => f.accommodations);
+      return (data || []).map(f => f.accommodations).filter(Boolean);
     },
     enabled: !!user?.id,
   });
@@ -278,7 +278,7 @@ const Profile = () => {
           <TabsList className="w-full bg-gray-50 border border-gray-200 rounded-xl p-1 flex flex-wrap gap-2">
             <TabsTrigger
               value="saved"
-              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              className="flex-1 md:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
               aria-label="Saved"
             >
               <Heart className="w-5 h-5" /> <span className="hidden sm:inline">Saved</span>
@@ -286,7 +286,7 @@ const Profile = () => {
 
             <TabsTrigger
               value="recent"
-              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              className="flex-1 md:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
               aria-label="Recently viewed"
             >
               <Clock className="w-5 h-5" /> <span className="hidden sm:inline">Recent</span>
@@ -294,7 +294,7 @@ const Profile = () => {
 
             <TabsTrigger
               value="foryou"
-              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              className="flex-1 md:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
               aria-label="Recommended for you"
             >
               <Sparkles className="w-5 h-5" /> <span className="hidden sm:inline">For you</span>
@@ -302,7 +302,7 @@ const Profile = () => {
 
             <TabsTrigger
               value="profile"
-              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              className="flex-1 md:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
               aria-label="Profile"
             >
               <User2 className="w-5 h-5" /> <span className="hidden sm:inline">Profile</span>
