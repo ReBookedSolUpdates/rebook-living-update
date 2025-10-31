@@ -528,114 +528,45 @@ const ListingDetail = () => {
               </CardContent>
             </Card>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Photos</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {photos && photos.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        {photos.slice(0, 6).map((src, i) => (
-                          <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full h-28 overflow-hidden rounded-md">
-                            <img loading="lazy" src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-full" />
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No photos available</div>
-                    )}
-                    {photos && photos.length > 6 && <div className="text-sm text-muted-foreground mt-2">Showing 6 of {photos.length} photos</div>}
-                  </CardContent>
-                </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Google Reviews</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {reviews && reviews.length > 0 ? (
+                  <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                    {reviews.map((r: any, idx: number) => (
+                      <div key={idx} className="p-2 border rounded">
+                        <div className="flex items-start gap-3">
+                          {r.profile_photo_url ? (
+                            <img src={r.profile_photo_url} alt={r.author_name} className="w-10 h-10 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-muted" />
+                          )}
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Google Maps</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}>
-                          {mapType === 'roadmap' ? 'Satellite' : 'Map'}
-                        </Button>
-                      </div>
-                      <div>
-                        <Dialog open={expandOpen} onOpenChange={setExpandOpen}>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="ghost">Expand Map</Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl w-[95vw] p-0">
-                            <div className="p-4">
-                              <DialogHeader>
-                                <DialogTitle>Map - {listing.property_name}</DialogTitle>
-                              </DialogHeader>
-                              <div ref={largeMapRef} className="h-[60vh] w-full rounded-md overflow-hidden bg-muted mt-4" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="font-semibold">{r.author_name}</div>
+                              <div className="text-sm text-muted-foreground">{r.rating} ★</div>
                             </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
-
-                    <div ref={mapRef} id="gmaps" className="h-40 w-full rounded-md overflow-hidden bg-muted" />
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Google Reviews</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {reviews && reviews.length > 0 ? (
-                      <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-                        {reviews.map((r: any, idx: number) => (
-                          <div key={idx} className="p-2 border rounded">
-                            <div className="flex items-start gap-3">
-                              {r.profile_photo_url ? (
-                                <img src={r.profile_photo_url} alt={r.author_name} className="w-10 h-10 rounded-full object-cover" />
-                              ) : (
-                                <div className="w-10 h-10 rounded-full bg-muted" />
-                              )}
-
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <div className="font-semibold">{r.author_name}</div>
-                                  <div className="text-sm text-muted-foreground">{r.rating} ★</div>
-                                </div>
-                                <div className="text-sm text-muted-foreground mt-1">{r.relative_time_description}</div>
-                                <p className="mt-2 text-sm">{r.text}</p>
-                              </div>
-                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">{r.relative_time_description}</div>
+                            <p className="mt-2 text-sm">{r.text}</p>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No reviews available</div>
-                    )}
-                    <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
-                    {placeUrl && (
-                      <div className="mt-2">
-                        <a href={placeUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">View on Google Maps</a>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {listing.website && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Website</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <a href={listing.website} target="_blank" rel="noreferrer" className="text-primary underline">{listing.website}</a>
-                    </CardContent>
-                  </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No reviews available</div>
                 )}
-              </div>
-            </div>
+                <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
+                {placeUrl && (
+                  <div className="mt-2">
+                    <a href={placeUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">View on Google Maps</a>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
               <DialogContent className="max-w-3xl w-[90vw]">
