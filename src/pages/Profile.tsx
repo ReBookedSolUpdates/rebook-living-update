@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import AccommodationCard from "@/components/AccommodationCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User2, Heart, Clock, Sparkles, CheckCircle, AlertCircle, LogOut, ShieldCheck } from "lucide-react";
+import { User2, Heart, Clock, CheckCircle, AlertCircle, LogOut, ShieldCheck } from "lucide-react";
 
 const SA_UNIVERSITIES = [
   "University of Cape Town",
