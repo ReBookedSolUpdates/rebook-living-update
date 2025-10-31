@@ -223,7 +223,7 @@ const AccommodationCard = ({
           </div>
 
           <div className="text-right flex-shrink-0">
-            <p className="text-2xl font-bold text-primary">R{monthlyCost.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-primary">{typeof monthlyCost === 'number' ? `R${monthlyCost.toLocaleString()}` : 'Contact for price'}</p>
             <p className="text-xs text-muted-foreground">per month</p>
           </div>
         </div>
