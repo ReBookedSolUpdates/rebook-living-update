@@ -220,7 +220,7 @@ const ListingDetail = () => {
   if (isLoading) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="animate-pulse">
             <div className="h-96 bg-muted rounded-lg mb-8"></div>
             <div className="h-8 bg-muted rounded w-1/2 mb-4"></div>
@@ -246,7 +246,7 @@ const ListingDetail = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <Link to="/browse">
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
