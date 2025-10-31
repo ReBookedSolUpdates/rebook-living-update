@@ -68,8 +68,7 @@ const Terms = () => {
                 <p className="text-base text-muted-foreground">
                   ReBooked Living is owned and operated by ReBooked Solutions (Pty) Ltd, a company incorporated in South Africa.<br />
                   Support: <a href="mailto:support@rebookedsolutions.co.za" className="text-primary underline">support@rebookedsolutions.co.za</a><br />
-                  Legal: <a href="mailto:legal@rebookedsolutions.co.za" className="text-primary underline">legal@rebookedsolutions.co.za</a><br />
-                  Address: [Insert registered company address]
+                  Legal: <a href="mailto:legal@rebookedsolutions.co.za" className="text-primary underline">legal@rebookedsolutions.co.za</a>
                 </p>
 
                 <h3 className="text-lg font-semibold text-foreground mt-4" id="services">3. Services</h3>
