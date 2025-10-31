@@ -63,36 +63,36 @@ const Privacy = () => {
                 </div>
               </div>
 
-              <div className="mt-6 prose prose-lg max-w-none">
-                <h2 id="introduction">1. Introduction</h2>
-                <p>
+              <div className="mt-6 max-w-3xl text-base leading-relaxed text-muted-foreground space-y-6">
+                <h2 className="text-xl md:text-2xl font-semibold text-foreground mt-6" id="introduction">1. Introduction</h2>
+                <p className="text-base text-muted-foreground">
                   ReBooked Living ("ReBooked Living", "we", "us", "our") is a platform owned and operated by ReBooked Solutions (Pty) Ltd. This Privacy Policy explains how we collect, use, share, and protect your personal information in accordance with the Protection of Personal Information Act (POPIA) and other applicable South African privacy laws.
                 </p>
 
-                <h3 id="info-we-collect">2. Information We Collect</h3>
-                <h4>A. Personal Information</h4>
-                <ul>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="info-we-collect">2. Information We Collect</h3>
+                <h4 className="text-sm font-semibold text-foreground mt-3">A. Personal Information</h4>
+                <ul className="list-disc pl-6 space-y-2">
                   <li>Full name and surname</li>
                   <li>Email address</li>
                   <li>University or institution name</li>
                 </ul>
 
-                <h4>B. Automatically Collected Information</h4>
-                <ul>
+                <h4 className="text-sm font-semibold text-foreground mt-3">B. Automatically Collected Information</h4>
+                <ul className="list-disc pl-6 space-y-2">
                   <li>IP address and browser type</li>
                   <li>Device information</li>
                   <li>Pages visited and session activity</li>
                   <li>Cookies and analytics data (including Google Ads cookies)</li>
                 </ul>
 
-                <h4>C. University Data</h4>
-                <p>
+                <h4 className="text-sm font-semibold text-foreground mt-3">C. University Data</h4>
+                <p className="text-base text-muted-foreground">
                   We collect and display PDFs, accreditation documents, and public accommodation lists issued by South African universities. These materials are published publicly by the universities, and we display them for informational and reference purposes only.
                 </p>
 
-                <h3 id="purpose">3. Purpose of Processing</h3>
-                <p>We process information for:</p>
-                <ul>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="purpose">3. Purpose of Processing</h3>
+                <p className="text-base text-muted-foreground">We process information for:</p>
+                <ul className="list-disc pl-6 space-y-2">
                   <li>Displaying accredited student accommodation listings</li>
                   <li>Managing user accounts and inquiries</li>
                   <li>Sending updates and service notices</li>
@@ -101,23 +101,23 @@ const Privacy = () => {
                   <li>Legal compliance and fraud prevention</li>
                 </ul>
 
-                <h3 id="cookies">4. Google Ads &amp; Cookies</h3>
-                <p>We use Google Ads and Analytics to display and measure advertising. Cookies are used to maintain essential site functionality, analyse site usage, and deliver relevant advertisements. You can manage or disable cookies in your browser or Google’s ad settings.</p>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="cookies">4. Google Ads &amp; Cookies</h3>
+                <p className="text-base text-muted-foreground">We use Google Ads and Analytics to display and measure advertising. Cookies are used to maintain essential site functionality, analyse site usage, and deliver relevant advertisements. You can manage or disable cookies in your browser or Google’s ad settings.</p>
 
-                <h3 id="data-sharing">5. Data Sharing</h3>
-                <p>We may share limited data with trusted service providers, Google Ads/Analytics, universities for verification, and law enforcement where required. We do not sell your data for monetary gain.</p>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="data-sharing">5. Data Sharing</h3>
+                <p className="text-base text-muted-foreground">We may share limited data with trusted service providers, Google Ads/Analytics, universities for verification, and law enforcement where required. We do not sell your data for monetary gain.</p>
 
-                <h3 id="retention">6. Data Retention</h3>
-                <p>Account information: kept until deletion. Analytics: retained up to 24 months. Support emails: retained for up to 2 years.</p>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="retention">6. Data Retention</h3>
+                <p className="text-base text-muted-foreground">Account information: kept until deletion. Analytics: retained up to 24 months. Support emails: retained for up to 2 years.</p>
 
-                <h3 id="security">7. Security</h3>
-                <p>We use encryption, secure hosting, and strict access controls to protect personal information. However, no system is 100% secure.</p>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="security">7. Security</h3>
+                <p className="text-base text-muted-foreground">We use encryption, secure hosting, and strict access controls to protect personal information. However, no system is 100% secure.</p>
 
-                <h3 id="rights">8. Your Rights</h3>
-                <p>You have the right to access, correct, delete, withdraw consent, object to direct marketing, and lodge a complaint with the Information Regulator of South Africa.</p>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="rights">8. Your Rights</h3>
+                <p className="text-base text-muted-foreground">You have the right to access, correct, delete, withdraw consent, object to direct marketing, and lodge a complaint with the Information Regulator of South Africa.</p>
 
-                <h3 id="contact">9. Contact</h3>
-                <p>
+                <h3 className="text-lg font-semibold text-foreground mt-4" id="contact">9. Contact</h3>
+                <p className="text-base text-muted-foreground">
                   For privacy requests and legal inquiries: <a href="mailto:legal@rebookedsolutions.co.za" className="text-primary underline">legal@rebookedsolutions.co.za</a><br />
                   Support: <a href="mailto:support@rebookedsolutions.co.za" className="text-primary underline">support@rebookedsolutions.co.za</a>
                 </p>
