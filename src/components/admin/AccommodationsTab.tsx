@@ -149,11 +149,26 @@ const AccommodationsTab = () => {
     updateMutation.mutate(selectedAccommodation);
   };
 
-  const filteredAccommodations = accommodations?.filter((acc) =>
-    acc.property_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAccommodations = useMemo(() => {
+    if (!accommodations) return [];
+    const q = (searchQuery || "").trim().toLowerCase();
+    if (!q) return accommodations;
+
+    return accommodations.filter((acc: any) => {
+      const hay = [acc.property_name, acc.city, acc.type, acc.university, acc.address]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      if (hay.includes(q)) return true;
+
+      // numeric search (price/id)
+      if (String(acc.monthly_cost || '').includes(q)) return true;
+      if (String(acc.id || '').toLowerCase().includes(q)) return true;
+
+      return false;
+    });
+  }, [accommodations, searchQuery]);
 
   const universities = [...new Set(accommodations?.map(acc => acc.university).filter(Boolean))];
 
