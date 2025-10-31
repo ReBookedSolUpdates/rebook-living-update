@@ -246,6 +246,7 @@ const AccommodationsTab = () => {
             className="pl-9"
           />
         </div>
+        <div className="text-sm text-muted-foreground mr-4">Showing {filteredAccommodations?.length || 0} / {accommodations?.length || 0}</div>
         {selectedIds.length > 0 && (
           <Button
             variant="destructive"
