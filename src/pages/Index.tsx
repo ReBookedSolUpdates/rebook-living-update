@@ -11,16 +11,26 @@ const Index = () => {
   const { data: featuredListings, isLoading } = useQuery({
     queryKey: ["featured-accommodations", Math.floor(Date.now() / (60 * 60 * 1000))],
     queryFn: async () => {
-      // Get current hour for rotation
-      const currentHour = new Date().getHours();
-      const offset = (currentHour * 6) % 100; // Rotate every hour
+      // Determine total active accommodations
+      const { data: countData, count, error: countError } = await supabase
+        .from("accommodations")
+        .select("id", { count: "exact" })
+        .eq("status", "active");
+
+      if (countError) throw countError;
+      const total = count || 0;
+      if (total === 0) return [];
+
+      const hourIndex = Math.floor(Date.now() / (60 * 60 * 1000));
+      const start = hourIndex % total;
+      const end = Math.min(start + 4, total - 1); // always show 5
 
       const { data, error } = await supabase
         .from("accommodations")
         .select("*")
         .eq("status", "active")
         .order("rating", { ascending: false })
-        .range(offset, offset + 5);
+        .range(start, end);
 
       if (error) throw error;
       return data;
@@ -33,9 +43,11 @@ const Index = () => {
       {/* Hero - background house image */}
       <section className="relative h-[65vh] md:h-[72vh]">
         <img
-          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"
-          alt="House exterior"
+          src="https://picsum.photos/id/1018/1600/900"
+          alt="Student accommodation interior"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-primary/30 to-transparent" />
 

@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import AccommodationCard from "@/components/AccommodationCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User2, Heart, Clock, Sparkles, CheckCircle, AlertCircle, LogOut } from "lucide-react";
 
 const SA_UNIVERSITIES = [
   "University of Cape Town",
@@ -66,7 +67,7 @@ const Profile = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => subscription.unsubscribe && subscription.unsubscribe();
   }, [navigate]);
 
   const { data: profile } = useQuery({
@@ -129,13 +130,30 @@ const Profile = () => {
     queryKey: ["recommended", university],
     queryFn: async () => {
       if (!university) return [];
+
+      // get count for active accommodations for the university
+      const { data: countData, count, error: countError } = await supabase
+        .from("accommodations")
+        .select("id", { count: "exact" })
+        .eq("status", "active")
+        .eq("university", university);
+
+      if (countError) throw countError;
+      const total = count || 0;
+      if (total === 0) return [];
+
+      // rotate hourly using hour index
+      const hourIndex = Math.floor(Date.now() / (60 * 60 * 1000));
+      const start = hourIndex % total;
+      const end = Math.min(start + 4, total - 1); // show up to 5
+
       const { data, error } = await supabase
         .from("accommodations")
         .select("*")
         .eq("status", "active")
         .eq("university", university)
-        .limit(6);
-      
+        .range(start, end);
+
       if (error) throw error;
       return data;
     },
@@ -175,42 +193,111 @@ const Profile = () => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        toast({ title: "Error", description: "Failed to sign out. Please try again.", variant: "destructive" });
+      }
+    } catch (err: any) {
+      console.error("Sign out failed:", err);
+      toast({ title: "Error", description: err?.message || "Network error while signing out.", variant: "destructive" });
+    } finally {
+      // Ensure local redirect even if sign out request failed
+      try {
+        // Attempt to clear local session storage keys set by supabase
+        localStorage.removeItem("sb:$AUTH_TOKEN");
+      } catch (e) {
+        // ignore
+      }
+      navigate("/");
+    }
   };
 
   if (!user) return null;
 
+  const memberSince = user?.created_at ? new Date(user.created_at).toLocaleDateString() : profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "-";
+  const savedCount = favorites?.length || 0;
+
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">My Profile</h1>
-          <Button onClick={handleSignOut} variant="outline">
-            Sign Out
-          </Button>
-        </div>
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <Card className="w-full p-4 mb-4 rounded-2xl shadow-sm">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <User2 className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold">{firstName || lastName ? `${firstName} ${lastName}` : user.email}</h1>
+                <div className="text-sm text-muted-foreground mt-1">Member since {memberSince}</div>
+                {user.email_confirmed_at ? (
+                  <div className="mt-2 inline-flex items-center gap-2 text-sm text-green-600 font-medium">
+                    <CheckCircle className="w-4 h-4" /> Verified
+                  </div>
+                ) : null}
+              </div>
+            </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="profile">Profile Details</TabsTrigger>
-            <TabsTrigger value="saved">Saved Properties</TabsTrigger>
-            <TabsTrigger value="recent">Recently Viewed</TabsTrigger>
-            <TabsTrigger value="recommended">Recommended</TabsTrigger>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl border bg-gradient-to-br from-white to-gray-50 p-3 flex items-center gap-3">
+                <div className="text-sm text-muted-foreground">Saved</div>
+                <div className="text-xl font-semibold">{savedCount}</div>
+              </div>
+
+              <Button onClick={handleSignOut} variant="outline" className="inline-flex items-center gap-2 h-10 px-4">
+                <LogOut className="w-4 h-4" /> Sign Out
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Tabs defaultValue="saved" className="space-y-6">
+          <TabsList className="w-full bg-gray-50 border border-gray-200 rounded-xl p-1 flex justify-between sm:justify-start gap-2">
+            <TabsTrigger
+              value="saved"
+              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              aria-label="Saved"
+            >
+              <Heart className="w-5 h-5" /> <span className="hidden sm:inline">Saved</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="recent"
+              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              aria-label="Recently viewed"
+            >
+              <Clock className="w-5 h-5" /> <span className="hidden sm:inline">Recent</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="foryou"
+              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              aria-label="Recommended for you"
+            >
+              <Sparkles className="w-5 h-5" /> <span className="hidden sm:inline">For you</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="profile"
+              className="flex-1 sm:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
+              aria-label="Profile"
+            >
+              <User2 className="w-5 h-5" /> <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+            <Card className="border border-gray-200 rounded-xl bg-gradient-to-br from-white to-gray-50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl md:text-2xl">Profile Information</CardTitle>
                 <CardDescription>
                   Update your profile details. Email: {user.email}
-                  {user.email_confirmed_at ? " (Verified)" : " (Not verified)"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleUpdateProfile} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="first-name">First Name</Label>
                       <Input
@@ -252,7 +339,7 @@ const Profile = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" disabled={loading}>
+                  <Button type="submit" disabled={loading} className="inline-flex items-center justify-center gap-2 px-4 h-10">
                     {loading ? "Saving..." : "Save Changes"}
                   </Button>
                 </form>
@@ -261,9 +348,9 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="saved">
-            <h2 className="text-2xl font-bold mb-4">Saved Properties</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Saved Properties</h2>
             {favorites && favorites.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {favorites.map((accommodation: any) => (
                   <AccommodationCard key={accommodation.id} {...accommodation} />
                 ))}
@@ -274,9 +361,9 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="recent">
-            <h2 className="text-2xl font-bold mb-4">Recently Viewed</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Recently Viewed</h2>
             {recentlyViewed && recentlyViewed.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {recentlyViewed.map((accommodation: any) => (
                   <AccommodationCard key={accommodation.id} {...accommodation} />
                 ))}
@@ -286,17 +373,16 @@ const Profile = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="recommended">
-            <h2 className="text-2xl font-bold mb-4">
-              Recommended for You
-              {university && ` (${university})`}
+          <TabsContent value="foryou">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">
+              Recommended for You{university && ` (${university})`}
             </h2>
             {!university ? (
               <p className="text-muted-foreground">
                 Please add your university to see personalized recommendations
               </p>
             ) : recommended && recommended.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {recommended.map((accommodation: any) => (
                   <AccommodationCard key={accommodation.id} {...accommodation} />
                 ))}

@@ -9,20 +9,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 
+import { useLocation } from "react-router-dom";
+
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
+
+  useEffect(() => {
+    if (location.hash === "#signup") setTab("signup");
+  }, [location.hash]);
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        navigate("/profile");
       }
     };
     checkUser();
@@ -36,7 +44,7 @@ const Auth = () => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/profile`,
         data: {
           first_name: firstName,
           last_name: lastName,
@@ -78,7 +86,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
-      navigate("/");
+      navigate("/profile");
     }
   };
 
@@ -91,7 +99,7 @@ const Auth = () => {
             <CardDescription>Sign in or create an account</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin">
+            <Tabs defaultValue={tab} onValueChange={(v) => setTab(v as any)}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
