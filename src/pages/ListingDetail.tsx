@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Star, Home, Users, Wifi, Phone, Mail, CheckCircle, ArrowLeft, Flag } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 const ListingDetail = () => {
@@ -80,6 +80,68 @@ const ListingDetail = () => {
       toast.error("Failed to submit report. Please try again.");
     },
   });
+
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const [reviews, setReviews] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
+    if (!apiKey) return;
+
+    const existing = document.getElementById('google-maps-script');
+    if (existing) {
+      // script already present, try init
+      initMap();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => initMap();
+    script.onerror = () => console.warn('Failed to load Google Maps script');
+    document.head.appendChild(script);
+
+    function initMap() {
+      try {
+        const google = (window as any).google;
+        if (!google || !mapRef.current) return;
+        const map = new google.maps.Map(mapRef.current, {
+          center: { lat: -33.9249, lng: 18.4241 },
+          zoom: 13,
+        });
+
+        const service = new google.maps.places.PlacesService(map);
+        const addressQuery = [listing?.property_name, listing?.address, listing?.city, listing?.province].filter(Boolean).join(', ');
+
+        service.findPlaceFromQuery({
+          query: addressQuery || listing?.property_name || listing?.address || listing?.city,
+          fields: ['place_id', 'geometry', 'name'],
+        }, (results: any, status: any) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
+            const place = results[0];
+            if (place.geometry && place.geometry.location) {
+              map.setCenter(place.geometry.location);
+              new google.maps.Marker({ map, position: place.geometry.location });
+            }
+
+            service.getDetails({ placeId: place.place_id, fields: ['review', 'reviews', 'rating', 'name'] }, (detail: any, dStatus: any) => {
+              if (dStatus === google.maps.places.PlacesServiceStatus.OK && detail && detail.reviews) {
+                setReviews(detail.reviews.slice(0, 5));
+              }
+            });
+          }
+        });
+      } catch (err) {
+        console.warn('Google Maps init error', err);
+      }
+    }
+
+    // cleanup not strictly necessary
+    return () => {};
+  }, [listing]);
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -341,7 +403,7 @@ const ListingDetail = () => {
                 <CardTitle>Google Maps</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Map placeholder</div>
+                <div ref={mapRef} id="gmaps" className="h-40 w-full rounded-md overflow-hidden bg-muted" />
               </CardContent>
             </Card>
 
@@ -350,7 +412,22 @@ const ListingDetail = () => {
                 <CardTitle>Google Reviews</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">Reviews placeholder</div>
+                {reviews && reviews.length > 0 ? (
+                  <div className="space-y-3">
+                    {reviews.map((r: any, idx: number) => (
+                      <div key={idx} className="p-2 border rounded">
+                        <div className="flex items-center justify-between">
+                          <div className="font-semibold">{r.author_name}</div>
+                          <div className="text-sm text-muted-foreground">{r.rating} ★</div>
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">{r.relative_time_description}</div>
+                        <p className="mt-2 text-sm">{r.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-40 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No reviews available</div>
+                )}
                 <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
               </CardContent>
             </Card>
