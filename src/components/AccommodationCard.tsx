@@ -138,11 +138,11 @@ const AccommodationCard = ({
 
   return (
     <Card className="overflow-hidden rounded-2xl hover:shadow-lg transition-shadow">
-      {imageUrls && imageUrls.length > 0 ? (
+      {localImages && localImages.length > 0 ? (
         <div className="relative">
           <Carousel className="w-full">
             <CarouselContent>
-              {imageUrls.map((src, idx) => (
+              {localImages.map((src, idx) => (
                 <CarouselItem key={idx}>
                   <div className="w-full h-48 overflow-hidden bg-muted">
                     <img loading="lazy" src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
