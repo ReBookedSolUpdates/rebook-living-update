@@ -82,6 +82,11 @@ const ListingDetail = () => {
   });
 
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const largeMapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
+  const [expandOpen, setExpandOpen] = useState(false);
   const [reviews, setReviews] = useState<any[] | null>(null);
 
   useEffect(() => {
@@ -90,7 +95,6 @@ const ListingDetail = () => {
 
     const existing = document.getElementById('google-maps-script');
     if (existing) {
-      // script already present, try init
       initMap();
       return;
     }
@@ -108,26 +112,36 @@ const ListingDetail = () => {
       try {
         const google = (window as any).google;
         if (!google || !mapRef.current) return;
+
         const map = new google.maps.Map(mapRef.current, {
           center: { lat: -33.9249, lng: 18.4241 },
-          zoom: 13,
+          zoom: 15,
+          mapTypeId: mapType,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            mapTypeIds: ['roadmap', 'satellite', 'hybrid'],
+          },
         });
+
+        mapInstanceRef.current = map;
 
         const service = new google.maps.places.PlacesService(map);
         const addressQuery = [listing?.property_name, listing?.address, listing?.city, listing?.province].filter(Boolean).join(', ');
 
         service.findPlaceFromQuery({
           query: addressQuery || listing?.property_name || listing?.address || listing?.city,
-          fields: ['place_id', 'geometry', 'name'],
+          fields: ['place_id', 'geometry', 'name', 'formatted_address'],
         }, (results: any, status: any) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
             const place = results[0];
             if (place.geometry && place.geometry.location) {
               map.setCenter(place.geometry.location);
-              new google.maps.Marker({ map, position: place.geometry.location });
+              map.setZoom(17);
+              markerRef.current = new google.maps.Marker({ map, position: place.geometry.location, title: place.name });
             }
 
-            service.getDetails({ placeId: place.place_id, fields: ['review', 'reviews', 'rating', 'name'] }, (detail: any, dStatus: any) => {
+            service.getDetails({ placeId: place.place_id, fields: ['reviews', 'rating', 'name'] }, (detail: any, dStatus: any) => {
               if (dStatus === google.maps.places.PlacesServiceStatus.OK && detail && detail.reviews) {
                 setReviews(detail.reviews.slice(0, 5));
               }
@@ -142,6 +156,37 @@ const ListingDetail = () => {
     // cleanup not strictly necessary
     return () => {};
   }, [listing]);
+
+  // Sync map type when changed
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setMapTypeId(mapType);
+    }
+  }, [mapType]);
+
+  // Initialize large map when expand dialog opens
+  useEffect(() => {
+    if (!expandOpen) return;
+    const google = (window as any).google;
+    if (!google || !largeMapRef.current || !mapInstanceRef.current) return;
+
+    const center = mapInstanceRef.current.getCenter ? mapInstanceRef.current.getCenter() : null;
+    const zoom = Math.max(mapInstanceRef.current.getZoom ? mapInstanceRef.current.getZoom() : 15, 16);
+
+    const largeMap = new google.maps.Map(largeMapRef.current, {
+      center: center || { lat: -33.9249, lng: 18.4241 },
+      zoom,
+      mapTypeId: mapType,
+      mapTypeControl: true,
+      streetViewControl: true,
+    });
+
+    if (markerRef.current && markerRef.current.getPosition) {
+      new google.maps.Marker({ map: largeMap, position: markerRef.current.getPosition(), title: markerRef.current.getTitle ? markerRef.current.getTitle() : undefined });
+    }
+
+    // No cleanup necessary — Google handles DOM, but remove listeners if added in future
+  }, [expandOpen]);
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
