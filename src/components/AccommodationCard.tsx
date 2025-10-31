@@ -93,6 +93,7 @@ const AccommodationCard = ({
   useEffect(() => {
     if (localImages && localImages.length > 0) return;
     const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
+    const photoApiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API2;
     if (!apiKey) return;
 
     const init = () => {
@@ -108,8 +109,28 @@ const AccommodationCard = ({
             service.getDetails({ placeId: place.place_id, fields: ['photos'] }, (detail: any, dStatus: any) => {
               if (dStatus === google.maps.places.PlacesServiceStatus.OK && detail && detail.photos && detail.photos.length > 0) {
                 try {
-                  const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                  setLocalImages(urls);
+                  if (photoApiKey) {
+                    // Prefer using the dedicated photos API key
+                    fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=photos&key=${apiKey}`)
+                      .then((r) => r.json())
+                      .then((json) => {
+                        const refs = json?.result?.photos || [];
+                        if (Array.isArray(refs) && refs.length > 0) {
+                          const urls = refs.map((ph: any) => `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${encodeURIComponent(ph.photo_reference)}&key=${photoApiKey}`);
+                          setLocalImages(urls);
+                        } else {
+                          const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
+                          setLocalImages(urls);
+                        }
+                      })
+                      .catch(() => {
+                        const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
+                        setLocalImages(urls);
+                      });
+                  } else {
+                    const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
+                    setLocalImages(urls);
+                  }
                 } catch (err) {
                   console.warn('Failed to extract place photos', err);
                 }
