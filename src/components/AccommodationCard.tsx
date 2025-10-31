@@ -44,6 +44,7 @@ const AccommodationCard = ({
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
     let mounted = true;
