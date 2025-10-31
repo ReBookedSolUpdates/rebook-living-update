@@ -8,6 +8,8 @@ import Browse from "./pages/Browse";
 import ListingDetail from "./pages/ListingDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Dashboard from "./pages/admin/Dashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
