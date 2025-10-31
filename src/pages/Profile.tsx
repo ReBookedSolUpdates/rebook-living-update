@@ -292,13 +292,6 @@ const Profile = () => {
               <Clock className="w-5 h-5" /> <span className="hidden sm:inline">Recent</span>
             </TabsTrigger>
 
-            <TabsTrigger
-              value="foryou"
-              className="flex-1 md:flex-none justify-center flex items-center gap-2 rounded-lg px-3 py-2 text-sm md:text-base data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm hover:bg-white/60 transition-all duration-200"
-              aria-label="Recommended for you"
-            >
-              <Sparkles className="w-5 h-5" /> <span className="hidden sm:inline">For you</span>
-            </TabsTrigger>
 
             <TabsTrigger
               value="profile"
