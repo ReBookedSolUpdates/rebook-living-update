@@ -225,7 +225,7 @@ const ListingDetail = () => {
   const [placeUrl, setPlaceUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
+    const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API2;
     const photoApiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API2;
     if (!apiKey) return;
 
