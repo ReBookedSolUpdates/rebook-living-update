@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import Ad from "@/components/Ad";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
@@ -224,7 +224,29 @@ const ListingDetail = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
   const [placeUrl, setPlaceUrl] = useState<string | null>(null);
   // Demo state for AI-powered insights CTA (preview only)
+  const navigate = useNavigate();
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
+
+  // Auto-open AI Insights if URL has ?ai=1 or sessionStorage grants access for this listing
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      if (params.get('ai') === '1') {
+        setAiDialogOpen(true);
+        return;
+      }
+
+      if (id) {
+        const allowed = sessionStorage.getItem(`ai_allowed_${id}`);
+        if (allowed === '1') {
+          setAiDialogOpen(true);
+          sessionStorage.removeItem(`ai_allowed_${id}`);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [location.search, id]);
   const miniMapRef = useRef<HTMLDivElement | null>(null);
   const miniMapInstanceRef = useRef<any | null>(null);
   const streetViewRef = useRef<any | null>(null);
@@ -393,6 +415,20 @@ const ListingDetail = () => {
 
     if (markerRef.current && markerRef.current.getPosition) {
       new google.maps.Marker({ map: largeMap, position: markerRef.current.getPosition(), title: markerRef.current.getTitle ? markerRef.current.getTitle() : undefined });
+    }
+
+    // trigger resize to ensure map renders correctly when dialog opens
+    try {
+      setTimeout(() => {
+        try {
+          google.maps.event.trigger(largeMap, 'resize');
+          if (center && largeMap.setCenter) largeMap.setCenter(center);
+        } catch (e) {
+          // ignore
+        }
+      }, 200);
+    } catch (e) {
+      // ignore
     }
 
     // No cleanup necessary — Google handles DOM, but remove listeners if added in future
@@ -657,45 +693,55 @@ const ListingDetail = () => {
                 <CardContent>
                   <p className="text-sm mb-2">Want the full picture? 📸 AI summaries, extra photos, nearby hotspots & local air quality — unlock now!</p>
                   <div className="text-center">
-                    <Button onClick={() => setAiDialogOpen((v) => !v)} className="w-full bg-primary hover:bg-primary-hover">
-                      {aiDialogOpen ? 'Hide AI Insights' : 'See AI Insights — Preview'}
+                    <Button onClick={() => {
+                      // Navigate to ad page which will grant access then return
+                      const returnPath = `/listing/${id}`;
+                      navigate(`/ad?l=${encodeURIComponent(id || '')}&return=${encodeURIComponent(returnPath)}`);
+                    }} className="w-full bg-primary hover:bg-primary-hover">
+                      See AI Insights — Preview
                     </Button>
 
-                    <div className={`overflow-hidden transform origin-top transition-all duration-300 mt-4 ${aiDialogOpen ? 'max-h-[800px] scale-y-100 opacity-100' : 'max-h-0 scale-y-0 opacity-0'}`}>
+                    <div className={`overflow-hidden transition-all duration-300 mt-4 ${aiDialogOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
                       <div className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <p className="mt-2">AI Summary: Overall positive sentiment. Guests praise friendly staff and location, but some mention occasional noise in the evenings. Top features: fast Wi‑Fi, secure building, close to campus.</p>
+                            <p className="mt-2 text-center md:text-left text-sm md:text-base text-muted-foreground max-w-prose">AI Summary: <strong>Overall positive sentiment.</strong> Guests praise friendly staff and location, but some mention occasional noise in the evenings. Top features: fast Wi‑Fi, secure building, close to campus.</p>
 
-                            <h4 className="mt-4 font-semibold">More photos</h4>
-                            <div className="grid grid-cols-3 gap-2 mt-2">
-                              {(photos && photos.length > 0 ? photos.slice(0,6) : ['/placeholder.svg','/placeholder.svg','/placeholder.svg']).map((src, i) => (
-                                <div key={i} className="w-full h-24 overflow-hidden rounded-md bg-muted">
-                                  <img src={src} alt={`AI photo ${i+1}`} className="object-cover w-full h-full" />
-                                </div>
-                              ))}
+                            <h4 className="mt-6 font-semibold text-center md:text-left">More photos</h4>
+                            <div className="grid grid-cols-3 gap-3 mt-3">
+                              {(() => {
+                                const aiPhotos = Array.from(new Set([...(listing?.image_urls || []), ...(photos || [])]));
+                                const display = aiPhotos.length > 0 ? aiPhotos.slice(0, 6) : ['/placeholder.svg','/placeholder.svg','/placeholder.svg'];
+                                return display.map((src, i) => (
+                                  <div key={i} className="w-full overflow-hidden rounded-lg bg-muted shadow-sm">
+                                    <img src={src} alt={`AI photo ${i+1}`} className="object-cover w-full h-24 md:h-28 transition-transform duration-200 hover:scale-105" />
+                                  </div>
+                                ));
+                              })()}
                             </div>
 
-                            <h4 className="mt-4 font-semibold">Nearby places</h4>
-                            <ul className="mt-2 list-disc ml-5 text-sm">
-                              <li>Convenience Store — 120 m</li>
-                              <li>Campus Shuttle Stop — 230 m</li>
-                              <li>Cafe & Bakery — 300 m</li>
-                              <li>Laundromat — 400 m</li>
+                            <h4 className="mt-6 font-semibold">Nearby places</h4>
+                            <ul className="mt-3 space-y-2 text-sm">
+                              {['Convenience Store — 120 m','Campus Shuttle Stop — 230 m','Cafe & Bakery — 300 m','Laundromat — 400 m'].map((p) => (
+                                <li key={p} className="flex items-start gap-3">
+                                  <span className="w-2 h-2 mt-2 rounded-full bg-muted-foreground/60 flex-shrink-0" />
+                                  <span className="text-sm text-muted-foreground">{p}</span>
+                                </li>
+                              ))}
                             </ul>
 
-                            <h4 className="mt-4 font-semibold">Air Quality</h4>
+                            <h4 className="mt-6 font-semibold">Air Quality</h4>
                             <div className="mt-2">
-                              <div className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">AQI 42 — Good</div>
-                              <p className="text-xs text-muted-foreground mt-2">Lower AQI means cleaner air — a healthy place to study and sleep.</p>
+                              <div className="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-green-50 text-green-800 text-sm font-medium shadow-sm">AQI 42 — Good</div>
+                              <p className="text-xs text-muted-foreground mt-3">Lower AQI means cleaner air — a healthy place to study and sleep.</p>
                             </div>
                           </div>
 
                           <div>
-                            <h4 className="font-semibold">Mini map</h4>
-                            <div ref={miniMapRef} className="w-full h-48 rounded-md overflow-hidden bg-muted mb-3" />
+                            <h4 className="font-semibold mb-2">Mini map</h4>
+                            <div ref={miniMapRef} className="w-full h-48 rounded-lg overflow-hidden bg-muted mb-3 shadow-sm" />
 
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
                               <Button size="sm" variant="outline" onClick={toggleMiniMapType}>{miniMapType === 'roadmap' ? 'Satellite' : 'Map'}</Button>
                               <Button size="sm" onClick={openMiniStreetView}>Street View</Button>
 
@@ -708,7 +754,7 @@ const ListingDetail = () => {
                                     <DialogHeader>
                                       <DialogTitle>Map - {listing.property_name}</DialogTitle>
                                     </DialogHeader>
-                                    <div ref={largeMapRef} className="h-[60vh] w-full rounded-md overflow-hidden bg-muted mt-4" />
+                                    <div ref={largeMapRef} className="h-[60vh] w-full rounded-lg overflow-hidden bg-muted mt-4" />
                                   </div>
                                 </DialogContent>
                               </Dialog>
@@ -718,12 +764,12 @@ const ListingDetail = () => {
                         </div>
 
                         <h4 className="mt-6 font-semibold">Reviews</h4>
-                        <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 mt-2">
+                        <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 mt-2" style={{ WebkitOverflowScrolling: 'touch' }}>
                           {(() => {
-                            const aiList = (reviews && reviews.length ? reviews.slice(3,9) : []);
-                            const needed = Math.max(0, 6 - aiList.length);
-                            const demoExtras = Array.from({ length: needed }).map((_, i) => ({ author_name: `AI Demo ${i+1}`, rating: 5, relative_time_description: '2 days ago', text: 'Helpful stay, would recommend.' }));
-                            const combined = aiList.concat(demoExtras).slice(0,6);
+                            const threeStar = (reviews || []).filter((r: any) => Number(r.rating) === 3).slice(0, 3);
+                            const needed = Math.max(0, 3 - threeStar.length);
+                            const demo = Array.from({ length: needed }).map((_, i) => ({ author_name: `Demo ${i+1}`, rating: 3, relative_time_description: 'Recently', text: 'Average stay — mixed experiences.' }));
+                            const combined = [...threeStar, ...demo].slice(0, 3);
                             return combined.map((r: any, idx: number) => (
                               <div key={idx} className="p-2 border rounded">
                                 <div className="flex items-start gap-3">
@@ -759,15 +805,15 @@ const ListingDetail = () => {
                   </CardHeader>
                   <CardContent>
                     {photos && photos.length > 0 ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {photos.slice(0,3).map((src, i) => (
-                          <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full h-32 overflow-hidden rounded-md">
-                            <img loading="lazy" src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-full" />
+                          <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full overflow-hidden rounded-lg shadow-sm">
+                            <img loading="lazy" src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-36 md:h-44 transition-transform duration-200 hover:scale-105" />
                           </button>
                         ))}
                       </div>
                     ) : (
-                      <div className="h-48 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No photos available</div>
+                      <div className="h-48 bg-muted rounded-lg flex items-center justify-center text-sm text-muted-foreground">No photos available</div>
                     )}
                     {photos && photos.length > 3 && <div className="text-sm text-muted-foreground mt-2">Showing {Math.min(3, photos.length)} of {photos.length} photos</div>}
                   </CardContent>
