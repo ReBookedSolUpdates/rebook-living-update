@@ -51,26 +51,44 @@ const AccommodationCard = ({
     const title = propertyName;
     const text = `${propertyName}${university ? ` — near ${university}` : ''}`;
 
-    try {
-      if ((navigator as any).share) {
+    // Preferred: try native share if available
+    if ((navigator as any).share) {
+      try {
         await (navigator as any).share({ title, text, url });
         toast({ title: 'Shared', description: 'Share dialog opened' });
         return;
+      } catch (err: any) {
+        // Permission denied / NotAllowed - try clipboard fallback
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(url);
+            toast({ title: 'Link copied', description: 'Listing link copied to clipboard' });
+            return;
+          }
+        } catch (e) {
+          // ignore
+        }
+        // final fallback
+        // eslint-disable-next-line no-alert
+        prompt('Copy this link', url);
+        return;
       }
+    }
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+    // No native share - try clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
         await navigator.clipboard.writeText(url);
         toast({ title: 'Link copied', description: 'Listing link copied to clipboard' });
         return;
+      } catch (err) {
+        // ignore and fallthrough to prompt
       }
-
-      // final fallback
-      // eslint-disable-next-line no-alert
-      prompt('Copy this link', url);
-    } catch (err: any) {
-      console.debug('Share failed', err?.message || err);
-      toast({ title: 'Share failed', description: err?.message || 'Could not share', variant: 'destructive' });
     }
+
+    // Last resort
+    // eslint-disable-next-line no-alert
+    prompt('Copy this link', url);
   };
 
   useEffect(() => {
