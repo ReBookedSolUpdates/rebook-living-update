@@ -743,9 +743,7 @@ const ListingDetail = () => {
                   <CardContent>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}>
-                          {mapType === 'roadmap' ? 'Satellite' : 'Map'}
-                        </Button>
+                        <div className="text-xs text-muted-foreground">Satellite & Street View available in AI Insights</div>
                       </div>
                       <div>
                         <Dialog open={expandOpen} onOpenChange={setExpandOpen}>
