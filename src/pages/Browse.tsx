@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import React, { useState } from "react";
 import { Info } from "lucide-react";
+import Ad from "@/components/Ad";
 
 const Browse = () => {
   const [searchParams] = useSearchParams();
@@ -22,7 +23,7 @@ const Browse = () => {
   const [sortBy, setSortBy] = useState("rating");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 21;
+  const ITEMS_PER_PAGE = 9;
 
   // Reset page when filters/search params change
   React.useEffect(() => {
@@ -141,6 +142,11 @@ const Browse = () => {
         
         <div className="mt-8">
 
+          {/* Top ad below the alert and above the listings */}
+          <div className="mb-4">
+            <Ad />
+          </div>
+
           <div>
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -151,24 +157,39 @@ const Browse = () => {
             ) : paginatedAccommodations && paginatedAccommodations.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedAccommodations.map((accommodation) => (
-                    <AccommodationCard
-                      key={accommodation.id}
-                      id={accommodation.id}
-                      propertyName={accommodation.property_name}
-                      type={accommodation.type}
-                      university={accommodation.university || ""}
-                      address={accommodation.address}
-                      city={accommodation.city || ""}
-                      monthlyCost={accommodation.monthly_cost || 0}
-                      rating={accommodation.rating || 0}
-                      nsfasAccredited={accommodation.nsfas_accredited || false}
-                      genderPolicy={accommodation.gender_policy || ""}
-                      website={accommodation.website || null}
-                      amenities={accommodation.amenities || []}
-                      imageUrls={accommodation.image_urls || []}
-                    />
-                  ))}
+                  {(() => {
+                    const nodes: React.ReactNode[] = [];
+                    paginatedAccommodations.forEach((accommodation, idx) => {
+                      nodes.push(
+                        <AccommodationCard
+                          key={accommodation.id}
+                          id={accommodation.id}
+                          propertyName={accommodation.property_name}
+                          type={accommodation.type}
+                          university={accommodation.university || ""}
+                          address={accommodation.address}
+                          city={accommodation.city || ""}
+                          monthlyCost={accommodation.monthly_cost || 0}
+                          rating={accommodation.rating || 0}
+                          nsfasAccredited={accommodation.nsfas_accredited || false}
+                          genderPolicy={accommodation.gender_policy || ""}
+                          website={accommodation.website || null}
+                          amenities={accommodation.amenities || []}
+                          imageUrls={accommodation.image_urls || []}
+                        />
+                      );
+
+                      // After every 2 accommodations, insert an ad before the next accommodation (but not after last item)
+                      if ((idx + 1) % 2 === 0 && idx !== paginatedAccommodations.length - 1) {
+                        nodes.push(
+                          <div key={`ad-${idx}`} className="col-span-1 md:col-span-2 lg:col-span-3">
+                            <Ad />
+                          </div>
+                        );
+                      }
+                    });
+                    return nodes;
+                  })()}
                 </div>
                 
                 {totalPages > 1 && (

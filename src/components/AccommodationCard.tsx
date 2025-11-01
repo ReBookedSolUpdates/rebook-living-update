@@ -142,6 +142,13 @@ const AccommodationCard = ({
   const [localImages, setLocalImages] = useState<string[] | null>(imageUrls && imageUrls.length > 0 ? imageUrls : null);
   const thumb = localImages && localImages.length > 0 ? localImages[0] : '/placeholder.svg';
 
+  const handleImgError = (idx?: number) => (e: any) => {
+    (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+    if (typeof idx === 'number') {
+      setLocalImages((prev) => (prev ? prev.filter((_, i) => i !== idx) : prev));
+    }
+  };
+
   useEffect(() => {
     if (localImages && localImages.length > 0) return;
     const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
@@ -160,67 +167,22 @@ const AccommodationCard = ({
             const place = results[0];
             (async () => {
               try {
-                const { getCacheItem, setCacheItem, cacheKeyForPlaceDetails, cacheKeyForPhoto, fetchAndCacheImage } = await import('@/lib/indexeddbCache');
-                const detailsKey = cacheKeyForPlaceDetails(place.place_id);
-                const cachedDetails = await getCacheItem(detailsKey);
-                if (cachedDetails && Array.isArray(cachedDetails.photos) && cachedDetails.photos.length > 0) {
-                  // Ensure cached photos are data URLs. If they are external URLs, fetch & convert to thumbnails.
-                  const results: string[] = [];
-                  for (let i = 0; i < cachedDetails.photos.length && results.length < 8; i++) {
-                    const p = cachedDetails.photos[i];
-                    if (!p) continue;
-                    if (typeof p === 'string' && p.startsWith('data:')) {
-                      results.push(p);
-                    } else if (typeof p === 'string') {
-                      try {
-                        const photoKey = cacheKeyForPhoto(place.place_id, String(i));
-                        const data = await fetchAndCacheImage(photoKey, p, 7 * 24 * 60 * 60 * 1000, 400, 400, 0.75);
-                        if (data) results.push(data);
-                      } catch (e) {
-                        // ignore this entry
-                      }
-                    }
-                  }
-                  if (results.length > 0) {
-                    setLocalImages(results);
-                    return;
-                  }
-                }
-
-                service.getDetails({ placeId: place.place_id, fields: ['photos'] }, async (detail: any, dStatus: any) => {
+                // Directly request place photos without persisting them to IndexedDB.
+                service.getDetails({ placeId: place.place_id, fields: ['photos'] }, (detail: any, dStatus: any) => {
                   if (dStatus === google.maps.places.PlacesServiceStatus.OK && detail && detail.photos && detail.photos.length > 0) {
                     try {
-                      if (photoApiKey) {
-                        const resp = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=photos&key=${photoApiKey || apiKey}`);
-                        const json = await resp.json().catch(() => ({}));
-                        const refs = json?.result?.photos || [];
-                        const urls: string[] = [];
-                        for (let i = 0; i < refs.length && i < 8; i++) {
-                          const ref = refs[i]?.photo_reference;
-                          if (!ref) continue;
-                          const photoKey = cacheKeyForPhoto(place.place_id, ref);
-                          const cached = await getCacheItem(photoKey);
-                          if (cached) {
-                            urls.push(cached);
-                          } else {
-                            const built = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${encodeURIComponent(ref)}&key=${photoApiKey || apiKey}`;
-                            const dataUrl = await fetchAndCacheImage(photoKey, built, 7 * 24 * 60 * 60 * 1000, 400, 400, 0.75);
-                            if (dataUrl) urls.push(dataUrl);
+                      const urls: string[] = [];
+                      for (let i = 0; i < detail.photos.length && i < 8; i++) {
+                        const p = detail.photos[i];
+                        try {
+                          if (p && typeof p.getUrl === 'function') {
+                            urls.push(p.getUrl({ maxWidth: 800 }));
                           }
+                        } catch (err) {
+                          // ignore malformed photo
                         }
-                        if (urls.length > 0) {
-                          setLocalImages(urls);
-                          try { await setCacheItem(detailsKey, { photos: urls }, 7 * 24 * 60 * 60 * 1000); } catch(e) { /* ignore */ }
-                        } else {
-                          const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                          setLocalImages(urls);
-                          try { await setCacheItem(detailsKey, { photos: urls }, 7 * 24 * 60 * 60 * 1000); } catch(e) { /* ignore */ }
-                        }
-                      } else {
-                        const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                        setLocalImages(urls);
-                        await setCacheItem(detailsKey, { photos: urls }, 7 * 24 * 60 * 60 * 1000);
                       }
+                      if (urls.length > 0) setLocalImages(urls);
                     } catch (err) {
                       console.warn('Failed to extract place photos', err);
                     }
@@ -265,7 +227,7 @@ const AccommodationCard = ({
               {localImages.map((src, idx) => (
                 <CarouselItem key={idx}>
                   <div className="w-full h-48 overflow-hidden bg-muted">
-                    <img loading="lazy" src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+                    <img loading="lazy" decoding="async" referrerPolicy="no-referrer" src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={handleImgError(idx)} />
                   </div>
                 </CarouselItem>
               ))}
@@ -276,7 +238,7 @@ const AccommodationCard = ({
         </div>
       ) : (
         <div className="w-full h-48 overflow-hidden bg-muted">
-          <img loading="lazy" src={thumb} alt={propertyName} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+          <img loading="lazy" decoding="async" referrerPolicy="no-referrer" src={thumb} alt={propertyName} className="object-cover w-full h-full" onError={handleImgError()} />
         </div>
       )}
 
@@ -289,7 +251,7 @@ const AccommodationCard = ({
         )}
         <div className="flex-1 text-white">
           <h3 className="font-semibold text-lg leading-tight text-white">{propertyName}</h3>
-          <p className="text-xs text-white/90">{type} �� {city}</p>
+          <p className="text-xs text-white/90">{type} • {city}</p>
         </div>
       </div>
 
@@ -311,7 +273,24 @@ const AccommodationCard = ({
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1"><Users className="w-4 h-4 text-primary" />{genderPolicy || 'Mixed'}</div>
-              <div className="flex items-center gap-1"><Star className="w-4 h-4 text-accent" />{(rating || 0).toFixed(1)}</div>
+              <div className="flex items-center gap-1">
+                {[0,1,2,3,4].map((i) => {
+                  const diff = (rating || 0) - i;
+                  if (diff >= 1) {
+                    return <Star key={i} className="w-4 h-4 text-accent" fill="currentColor" />;
+                  }
+                  if (diff > 0 && diff < 1) {
+                    return (
+                      <span key={i} className="relative inline-block w-4 h-4">
+                        <Star className="absolute inset-0 w-4 h-4 text-muted-foreground" />
+                        <Star className="absolute inset-0 w-4 h-4 text-accent" fill="currentColor" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                      </span>
+                    );
+                  }
+                  return <Star key={i} className="w-4 h-4 text-muted-foreground" />;
+                })}
+                <span className="ml-1">{(rating || 0).toFixed(1)}</span>
+              </div>
             </div>
 
             {amenities.length > 0 && (
@@ -330,7 +309,7 @@ const AccommodationCard = ({
 
       <CardFooter className="p-4 pt-0 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link to={`/listing/${id}`}>
+          <Link to={`/listing/${id}`} state={{ images: (localImages && localImages.length > 0) ? localImages : (imageUrls && imageUrls.length > 0) ? imageUrls : [thumb] }}>
             <Button variant="default" size="sm" className="bg-primary hover:bg-primary-hover rounded-full">
               View Details
             </Button>

@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
+import Ad from "@/components/Ad";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -214,8 +215,11 @@ const ListingDetail = () => {
   const markerRef = useRef<any>(null);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
   const [expandOpen, setExpandOpen] = useState(false);
+  const location = useLocation();
+  const passedImages = (location.state as any)?.images as string[] | undefined;
+
   const [reviews, setReviews] = useState<any[] | null>(null);
-  const [photos, setPhotos] = useState<string[] | null>(null);
+  const [photos, setPhotos] = useState<string[] | null>(passedImages && passedImages.length > 0 ? passedImages.slice(0,3) : null);
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
   const [placeUrl, setPlaceUrl] = useState<string | null>(null);
@@ -279,93 +283,24 @@ const ListingDetail = () => {
 
             (async () => {
               try {
-                // Check cache first
-                const { getCacheItem, setCacheItem, cacheKeyForPlaceDetails, fetchAndCacheImage, cacheKeyForPhoto } = await import('@/lib/indexeddbCache');
-                const cacheKey = cacheKeyForPlaceDetails(place.place_id);
-                const cached = await getCacheItem(cacheKey);
-                if (cached) {
-                  if (cached.reviews) setReviews(cached.reviews.slice(0,5));
-                  if (cached.photos && Array.isArray(cached.photos)) {
-                    setPhotos(cached.photos);
-                  }
-                  if (cached.url) setPlaceUrl(cached.url);
-                  return;
-                }
-
-                service.getDetails({ placeId: place.place_id, fields: ['reviews', 'rating', 'name', 'photos', 'url'] }, async (detail: any, dStatus: any) => {
-                  if (dStatus === google.maps.places.PlacesServiceStatus.OK) {
-                    if (detail && detail.reviews) {
-                      setReviews(detail.reviews.slice(0, 5));
-                    }
-
-                    if (detail && detail.photos && detail.photos.length > 0) {
+                // Simply request place details and use the photos directly; do NOT persist photos or reviews.
+                service.getDetails({ placeId: place.place_id, fields: ['reviews', 'rating', 'name', 'photos', 'url'] }, (detail: any, dStatus: any) => {
+                  if (dStatus === google.maps.places.PlacesServiceStatus.OK && detail) {
+                    if (detail.reviews) setReviews(detail.reviews.slice(0, 5));
+                    // Only set photos from Google if no images were passed from the listing card
+                    if ((!photos || photos.length === 0) && detail.photos && detail.photos.length > 0) {
                       try {
-                        // Try to fetch photo references via REST, then cache data URLs for each photo
-                        const detailResp = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=photos&key=${photoApiKey || apiKey}`);
-                        const json = await detailResp.json().catch(() => ({}));
-                        const refs = json?.result?.photos || [];
-                        const urls: string[] = [];
-
-                        const phs = Array.isArray(refs) && refs.length > 0 ? refs : detail.photos.map((p: any, idx: number) => ({ photo_reference: p.getUrl ? `ref_${idx}` : undefined }));
-
-                        const localUrls: string[] = [];
-                        for (let i = 0; i < phs.length; i++) {
-                          const ref = phs[i]?.photo_reference || (detail.photos && detail.photos[i] && detail.photos[i].getUrl ? detail.photos[i].getUrl({ maxWidth: 800 }) : null);
-                          if (!ref) continue;
-                          const photoCacheKey = cacheKeyForPhoto(place.place_id, String(ref));
-                          // if cached data url exists, use it
-                          const cachedPhoto = await getCacheItem(photoCacheKey);
-                          if (cachedPhoto) {
-                            localUrls.push(cachedPhoto);
-                          } else {
-                            // build photo URL and fetch then cache
-                            const built = refs && refs[i] ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${encodeURIComponent(refs[i].photo_reference)}&key=${photoApiKey || apiKey}` : String(ref);
-                            const dataUrl = await fetchAndCacheImage(photoCacheKey, built, 7 * 24 * 60 * 60 * 1000, 400, 400, 0.75);
-                            if (dataUrl) localUrls.push(dataUrl);
-                          }
-                          if (localUrls.length >= 12) break; // limit how many we load at once
-                        }
-
-                        if (localUrls.length > 0) setPhotos(localUrls);
+                        const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
+                        setPhotos(urls.slice(0,3));
                       } catch (err) {
                         console.warn('Failed to extract photo urls', err);
-                        const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                        setPhotos(urls);
                       }
                     }
-
-                    if (detail && detail.url) {
-                      setPlaceUrl(detail.url);
-                    }
-
-                    // Save to cache
-                    try {
-                      const toCache: any = { reviews: detail?.reviews || null, photos: undefined, url: detail?.url || null };
-                      // store photo data urls if available
-                      if (Array.isArray(detail?.photos) && localUrls && localUrls.length > 0) {
-                        toCache.photos = localUrls.slice(0, 12);
-                      } else if (Array.isArray(localUrls) && localUrls.length > 0) {
-                        toCache.photos = localUrls.slice(0, 12);
-                      }
-                      await setCacheItem(cacheKey, toCache, 7 * 24 * 60 * 60 * 1000);
-                    } catch (e) {
-                      // ignore cache failures
-                    }
+                    if (detail.url) setPlaceUrl(detail.url);
                   }
                 });
               } catch (e) {
-                console.warn('place details caching error', e);
-                // fallback to original getDetails call
-                service.getDetails({ placeId: place.place_id, fields: ['reviews', 'rating', 'name', 'photos', 'url'] }, (detail: any, dStatus: any) => {
-                  if (dStatus === google.maps.places.PlacesServiceStatus.OK) {
-                    if (detail && detail.reviews) setReviews(detail.reviews.slice(0, 5));
-                    if (detail && detail.photos) {
-                      const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                      setPhotos(urls);
-                    }
-                    if (detail && detail.url) setPlaceUrl(detail.url);
-                  }
-                });
+                console.warn('place details error', e);
               }
             })();
           }
@@ -656,6 +591,10 @@ const ListingDetail = () => {
               </CardContent>
             </Card>
 
+            <div className="my-6">
+              <Ad />
+            </div>
+
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <Card>
@@ -665,7 +604,7 @@ const ListingDetail = () => {
                   <CardContent>
                     {photos && photos.length > 0 ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {photos.map((src, i) => (
+                        {photos.slice(0,3).map((src, i) => (
                           <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full h-32 overflow-hidden rounded-md">
                             <img loading="lazy" src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-full" />
                           </button>
@@ -674,7 +613,7 @@ const ListingDetail = () => {
                     ) : (
                       <div className="h-48 bg-muted rounded-md flex items-center justify-center text-sm text-muted-foreground">No photos available</div>
                     )}
-                    {photos && photos.length > 6 && <div className="text-sm text-muted-foreground mt-2">Showing {Math.min(6, photos.length)} of {photos.length} photos</div>}
+                    {photos && photos.length > 3 && <div className="text-sm text-muted-foreground mt-2">Showing {Math.min(3, photos.length)} of {photos.length} photos</div>}
                   </CardContent>
                 </Card>
               </div>
@@ -713,6 +652,12 @@ const ListingDetail = () => {
                 </Card>
               </div>
             </div>
+
+            {/* Ad after photos and map */}
+            <div className="my-6">
+              <Ad />
+            </div>
+
           </div>
 
           {/* Sidebar */}
@@ -793,6 +738,10 @@ const ListingDetail = () => {
                 )}
               </CardContent>
             </Card>
+
+            <div className="my-6">
+              <Ad />
+            </div>
 
             <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
               <DialogContent className="max-w-3xl w-[90vw]">
