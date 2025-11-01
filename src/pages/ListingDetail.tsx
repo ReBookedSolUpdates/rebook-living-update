@@ -698,6 +698,11 @@ const ListingDetail = () => {
                             <h4 className="font-semibold">Mini map</h4>
                             <div ref={miniMapRef} className="w-full h-48 rounded-md overflow-hidden bg-muted mb-3" />
 
+                            <div className="flex items-center gap-2 mt-2">
+                              <Button size="sm" variant="outline" onClick={toggleMiniMapType}>{miniMapType === 'roadmap' ? 'Satellite' : 'Map'}</Button>
+                              <Button size="sm" onClick={openMiniStreetView}>Street View</Button>
+                            </div>
+
                             <div className="mt-4 text-right">
                               <Button className="bg-primary">Unlock full insights</Button>
                             </div>
