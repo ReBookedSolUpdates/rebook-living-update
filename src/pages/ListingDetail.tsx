@@ -312,12 +312,9 @@ const ListingDetail = () => {
         const map = new google.maps.Map(mapRef.current, {
           center: { lat: -33.9249, lng: 18.4241 },
           zoom: 15,
-          mapTypeId: mapType,
-          mapTypeControl: true,
-          mapTypeControlOptions: {
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            mapTypeIds: ['roadmap', 'satellite', 'hybrid'],
-          },
+          mapTypeId: 'roadmap',
+          mapTypeControl: false,
+          streetViewControl: false,
         });
 
         mapInstanceRef.current = map;
