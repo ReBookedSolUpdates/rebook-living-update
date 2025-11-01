@@ -223,6 +223,8 @@ const ListingDetail = () => {
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
   const [placeUrl, setPlaceUrl] = useState<string | null>(null);
+  // Demo state for AI-powered insights CTA (preview only)
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   useEffect(() => {
     const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API2;
