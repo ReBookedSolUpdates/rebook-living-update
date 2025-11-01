@@ -46,6 +46,33 @@ const AccommodationCard = ({
   const [loading, setLoading] = useState(false);
   const [animating, setAnimating] = useState(false);
 
+  const shareListing = async () => {
+    const url = `${window.location.origin}/listing/${id}`;
+    const title = propertyName;
+    const text = `${propertyName}${university ? ` — near ${university}` : ''}`;
+
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share({ title, text, url });
+        toast({ title: 'Shared', description: 'Share dialog opened' });
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied', description: 'Listing link copied to clipboard' });
+        return;
+      }
+
+      // final fallback
+      // eslint-disable-next-line no-alert
+      prompt('Copy this link', url);
+    } catch (err: any) {
+      console.debug('Share failed', err?.message || err);
+      toast({ title: 'Share failed', description: err?.message || 'Could not share', variant: 'destructive' });
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     (async () => {
