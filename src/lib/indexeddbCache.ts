@@ -84,7 +84,7 @@ export async function deleteCacheItem(key: string) {
 }
 
 // LRU enforcement: keep max number of entries
-const MAX_CACHE_ITEMS = 300; // configurable
+const MAX_CACHE_ITEMS = 1000; // configurable, increased to allow more thumbnails
 
 async function enforceMaxItems() {
   try {
@@ -118,8 +118,8 @@ async function enforceMaxItems() {
   }
 }
 
-// Helper: fetch image URL and convert to data URL for storage
-export async function fetchAndCacheImage(key: string, url: string, ttlMs: number | null = 7 * 24 * 60 * 60 * 1000) {
+// Helper: fetch image URL, resize to thumbnail, and convert to data URL for storage
+export async function fetchAndCacheImage(key: string, url: string, ttlMs: number | null = 7 * 24 * 60 * 60 * 1000, maxWidth = 600, maxHeight = 600, quality = 0.75) {
   try {
     // Try to get cached value first
     const existing = await getCacheItem(key);
@@ -128,13 +128,36 @@ export async function fetchAndCacheImage(key: string, url: string, ttlMs: number
     const res = await fetch(url);
     if (!res.ok) throw new Error('Image fetch failed');
     const blob = await res.blob();
-    // convert to data URL
-    const dataUrl = await blobToDataURL(blob);
+
+    // Resize to thumbnail to reduce size
+    const dataUrl = await resizeBlobToDataURL(blob, maxWidth, maxHeight, quality);
     await setCacheItem(key, dataUrl, ttlMs);
     return dataUrl;
   } catch (e) {
     console.warn('fetchAndCacheImage error', e);
     return null;
+  }
+}
+
+async function resizeBlobToDataURL(blob: Blob, maxWidth = 600, maxHeight = 600, quality = 0.75) {
+  try {
+    const imgBitmap = await createImageBitmap(blob);
+    const { width: iw, height: ih } = imgBitmap;
+    const ratio = Math.min(1, maxWidth / iw, maxHeight / ih);
+    const w = Math.max(1, Math.floor(iw * ratio));
+    const h = Math.max(1, Math.floor(ih * ratio));
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas not supported');
+    ctx.drawImage(imgBitmap, 0, 0, w, h);
+    // Prefer webp if supported
+    const mime = 'image/webp';
+    return canvas.toDataURL(mime, quality);
+  } catch (e) {
+    // fallback to original blob conversion
+    return blobToDataURL(blob);
   }
 }
 
