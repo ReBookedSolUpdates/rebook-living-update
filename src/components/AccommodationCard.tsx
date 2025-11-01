@@ -142,6 +142,13 @@ const AccommodationCard = ({
   const [localImages, setLocalImages] = useState<string[] | null>(imageUrls && imageUrls.length > 0 ? imageUrls : null);
   const thumb = localImages && localImages.length > 0 ? localImages[0] : '/placeholder.svg';
 
+  const handleImgError = (idx?: number) => (e: any) => {
+    (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+    if (typeof idx === 'number') {
+      setLocalImages((prev) => (prev ? prev.filter((_, i) => i !== idx) : prev));
+    }
+  };
+
   useEffect(() => {
     if (localImages && localImages.length > 0) return;
     const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
@@ -265,7 +272,7 @@ const AccommodationCard = ({
               {localImages.map((src, idx) => (
                 <CarouselItem key={idx}>
                   <div className="w-full h-48 overflow-hidden bg-muted">
-                    <img loading="lazy" src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+                    <img loading="lazy" decoding="async" referrerPolicy="no-referrer" src={src} alt={`${propertyName} ${idx + 1}`} className="object-cover w-full h-full" onError={handleImgError(idx)} />
                   </div>
                 </CarouselItem>
               ))}
@@ -276,7 +283,7 @@ const AccommodationCard = ({
         </div>
       ) : (
         <div className="w-full h-48 overflow-hidden bg-muted">
-          <img loading="lazy" src={thumb} alt={propertyName} className="object-cover w-full h-full" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+          <img loading="lazy" decoding="async" referrerPolicy="no-referrer" src={thumb} alt={propertyName} className="object-cover w-full h-full" onError={handleImgError()} />
         </div>
       )}
 
@@ -289,7 +296,7 @@ const AccommodationCard = ({
         )}
         <div className="flex-1 text-white">
           <h3 className="font-semibold text-lg leading-tight text-white">{propertyName}</h3>
-          <p className="text-xs text-white/90">{type} �� {city}</p>
+          <p className="text-xs text-white/90">{type} • {city}</p>
         </div>
       </div>
 
@@ -311,7 +318,24 @@ const AccommodationCard = ({
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1"><Users className="w-4 h-4 text-primary" />{genderPolicy || 'Mixed'}</div>
-              <div className="flex items-center gap-1"><Star className="w-4 h-4 text-accent" />{(rating || 0).toFixed(1)}</div>
+              <div className="flex items-center gap-1">
+                {[0,1,2,3,4].map((i) => {
+                  const diff = (rating || 0) - i;
+                  if (diff >= 1) {
+                    return <Star key={i} className="w-4 h-4 text-accent" fill="currentColor" />;
+                  }
+                  if (diff > 0 && diff < 1) {
+                    return (
+                      <span key={i} className="relative inline-block w-4 h-4">
+                        <Star className="absolute inset-0 w-4 h-4 text-muted-foreground" />
+                        <Star className="absolute inset-0 w-4 h-4 text-accent" fill="currentColor" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                      </span>
+                    );
+                  }
+                  return <Star key={i} className="w-4 h-4 text-muted-foreground" />;
+                })}
+                <span className="ml-1">{(rating || 0).toFixed(1)}</span>
+              </div>
             </div>
 
             {amenities.length > 0 && (
