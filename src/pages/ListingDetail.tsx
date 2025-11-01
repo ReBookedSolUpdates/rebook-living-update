@@ -224,7 +224,29 @@ const ListingDetail = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
   const [placeUrl, setPlaceUrl] = useState<string | null>(null);
   // Demo state for AI-powered insights CTA (preview only)
+  const navigate = useNavigate();
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
+
+  // Auto-open AI Insights if URL has ?ai=1 or sessionStorage grants access for this listing
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      if (params.get('ai') === '1') {
+        setAiDialogOpen(true);
+        return;
+      }
+
+      if (id) {
+        const allowed = sessionStorage.getItem(`ai_allowed_${id}`);
+        if (allowed === '1') {
+          setAiDialogOpen(true);
+          sessionStorage.removeItem(`ai_allowed_${id}`);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [location.search, id]);
   const miniMapRef = useRef<HTMLDivElement | null>(null);
   const miniMapInstanceRef = useRef<any | null>(null);
   const streetViewRef = useRef<any | null>(null);
