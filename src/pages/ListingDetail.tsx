@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "react-router-dom";
+import Ad from "@/components/Ad";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
