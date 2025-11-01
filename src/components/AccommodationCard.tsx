@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Users, CheckCircle, Info, Heart } from "lucide-react";
+import { MapPin, Star, Users, CheckCircle, Info, Heart, Share } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
@@ -244,7 +244,7 @@ const AccommodationCard = ({
         )}
         <div className="flex-1 text-white">
           <h3 className="font-semibold text-lg leading-tight text-white">{propertyName}</h3>
-          <p className="text-xs text-white/90">{type} • {city}</p>
+          <p className="text-xs text-white/90">{type} �� {city}</p>
         </div>
       </div>
 
