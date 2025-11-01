@@ -634,57 +634,51 @@ const ListingDetail = () => {
                 <CardContent>
                   <p className="text-sm mb-2">Want the full picture? 📸 AI summaries, extra photos, nearby hotspots & local air quality — unlock now!</p>
                   <div className="text-center">
-                    <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="w-full bg-primary hover:bg-primary-hover">See AI Insights — Preview</Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-3xl w-[90vw]">
-                        <div className="p-4">
-                          <DialogHeader>
-                            <DialogTitle>AI Insights (Demo)</DialogTitle>
-                          </DialogHeader>
+                    <Button onClick={() => setAiDialogOpen((v) => !v)} className="w-full bg-primary hover:bg-primary-hover">
+                      {aiDialogOpen ? 'Hide AI Insights' : 'See AI Insights — Preview'}
+                    </Button>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="mt-2">AI Summary: Overall positive sentiment. Guests praise friendly staff and location, but some mention occasional noise in the evenings. Top features: fast Wi‑Fi, secure building, close to campus.</p>
+                    <div className={`overflow-hidden transform origin-top transition-all duration-300 mt-4 ${aiDialogOpen ? 'max-h-[800px] scale-y-100 opacity-100' : 'max-h-0 scale-y-0 opacity-0'}`}>
+                      <div className="p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="mt-2">AI Summary: Overall positive sentiment. Guests praise friendly staff and location, but some mention occasional noise in the evenings. Top features: fast Wi‑Fi, secure building, close to campus.</p>
 
-                              <h4 className="mt-4 font-semibold">More photos</h4>
-                              <div className="grid grid-cols-3 gap-2 mt-2">
-                                {(photos && photos.length > 0 ? photos.slice(0,6) : ['/placeholder.svg','/placeholder.svg','/placeholder.svg']).map((src, i) => (
-                                  <div key={i} className="w-full h-24 overflow-hidden rounded-md bg-muted">
-                                    <img src={src} alt={`AI photo ${i+1}`} className="object-cover w-full h-full" />
-                                  </div>
-                                ))}
-                              </div>
-
-                              <h4 className="mt-4 font-semibold">Nearby places</h4>
-                              <ul className="mt-2 list-disc ml-5 text-sm">
-                                <li>Convenience Store — 120 m</li>
-                                <li>Campus Shuttle Stop — 230 m</li>
-                                <li>Cafe & Bakery — 300 m</li>
-                                <li>Laundromat — 400 m</li>
-                              </ul>
-
-                              <h4 className="mt-4 font-semibold">Air Quality</h4>
-                              <div className="mt-2">
-                                <div className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">AQI 42 — Good</div>
-                                <p className="text-xs text-muted-foreground mt-2">Lower AQI means cleaner air — a healthy place to study and sleep.</p>
-                              </div>
+                            <h4 className="mt-4 font-semibold">More photos</h4>
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              {(photos && photos.length > 0 ? photos.slice(0,6) : ['/placeholder.svg','/placeholder.svg','/placeholder.svg']).map((src, i) => (
+                                <div key={i} className="w-full h-24 overflow-hidden rounded-md bg-muted">
+                                  <img src={src} alt={`AI photo ${i+1}`} className="object-cover w-full h-full" />
+                                </div>
+                              ))}
                             </div>
 
-                            <div>
-                              <h4 className="font-semibold">Mini map</h4>
-                              <div ref={miniMapRef} className="w-full h-48 rounded-md overflow-hidden bg-muted mb-3" />
+                            <h4 className="mt-4 font-semibold">Nearby places</h4>
+                            <ul className="mt-2 list-disc ml-5 text-sm">
+                              <li>Convenience Store — 120 m</li>
+                              <li>Campus Shuttle Stop — 230 m</li>
+                              <li>Cafe & Bakery — 300 m</li>
+                              <li>Laundromat — 400 m</li>
+                            </ul>
 
-                              <div className="mt-4 text-right">
-                                <Button className="bg-primary">Unlock full insights</Button>
-                              </div>
+                            <h4 className="mt-4 font-semibold">Air Quality</h4>
+                            <div className="mt-2">
+                              <div className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">AQI 42 — Good</div>
+                              <p className="text-xs text-muted-foreground mt-2">Lower AQI means cleaner air — a healthy place to study and sleep.</p>
                             </div>
                           </div>
 
+                          <div>
+                            <h4 className="font-semibold">Mini map</h4>
+                            <div ref={miniMapRef} className="w-full h-48 rounded-md overflow-hidden bg-muted mb-3" />
+
+                            <div className="mt-4 text-right">
+                              <Button className="bg-primary">Unlock full insights</Button>
+                            </div>
+                          </div>
                         </div>
-                      </DialogContent>
-                    </Dialog>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
