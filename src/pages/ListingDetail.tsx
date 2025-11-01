@@ -652,6 +652,12 @@ const ListingDetail = () => {
                 </Card>
               </div>
             </div>
+
+            {/* Ad after photos and map */}
+            <div className="my-6">
+              <Ad />
+            </div>
+
           </div>
 
           {/* Sidebar */}
