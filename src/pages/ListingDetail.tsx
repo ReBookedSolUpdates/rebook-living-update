@@ -698,6 +698,20 @@ const ListingDetail = () => {
                             <div className="flex items-center gap-2 mt-2">
                               <Button size="sm" variant="outline" onClick={toggleMiniMapType}>{miniMapType === 'roadmap' ? 'Satellite' : 'Map'}</Button>
                               <Button size="sm" onClick={openMiniStreetView}>Street View</Button>
+
+                              <Dialog open={expandOpen} onOpenChange={setExpandOpen}>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="ghost">Expand Map</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl w-[95vw] p-0">
+                                  <div className="p-4">
+                                    <DialogHeader>
+                                      <DialogTitle>Map - {listing.property_name}</DialogTitle>
+                                    </DialogHeader>
+                                    <div ref={largeMapRef} className="h-[60vh] w-full rounded-md overflow-hidden bg-muted mt-4" />
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
                             </div>
 
                           </div>
@@ -706,9 +720,9 @@ const ListingDetail = () => {
                         <h4 className="mt-6 font-semibold">Reviews</h4>
                         <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 mt-2">
                           {(() => {
-                            const aiList = (reviews && reviews.length ? reviews.slice(0,6) : []);
+                            const aiList = (reviews && reviews.length ? reviews.slice(3,9) : []);
                             const needed = Math.max(0, 6 - aiList.length);
-                            const demoExtras = Array.from({ length: needed }).map((_, i) => ({ author_name: `Demo User ${i+1}`, rating: 5, relative_time_description: '2 days ago', text: 'Helpful stay, would recommend.' }));
+                            const demoExtras = Array.from({ length: needed }).map((_, i) => ({ author_name: `AI Demo ${i+1}`, rating: 5, relative_time_description: '2 days ago', text: 'Helpful stay, would recommend.' }));
                             const combined = aiList.concat(demoExtras).slice(0,6);
                             return combined.map((r: any, idx: number) => (
                               <div key={idx} className="p-2 border rounded">
