@@ -365,7 +365,22 @@ const Profile = () => {
             {favorites && favorites.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {favorites.map((accommodation: any) => (
-                  <AccommodationCard key={accommodation.id} {...accommodation} />
+                  <AccommodationCard
+                    key={accommodation.id}
+                    id={accommodation.id}
+                    propertyName={accommodation.property_name}
+                    type={accommodation.type}
+                    university={accommodation.university || ""}
+                    address={accommodation.address}
+                    city={accommodation.city || ""}
+                    monthlyCost={accommodation.monthly_cost || 0}
+                    rating={accommodation.rating || 0}
+                    nsfasAccredited={accommodation.nsfas_accredited || false}
+                    genderPolicy={accommodation.gender_policy || ""}
+                    website={accommodation.website || null}
+                    amenities={accommodation.amenities || []}
+                    imageUrls={accommodation.image_urls || []}
+                  />
                 ))}
               </div>
             ) : (
@@ -378,7 +393,22 @@ const Profile = () => {
             {recentlyViewed && recentlyViewed.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {recentlyViewed.map((accommodation: any) => (
-                  <AccommodationCard key={accommodation.id} {...accommodation} />
+                  <AccommodationCard
+                    key={accommodation.id}
+                    id={accommodation.id}
+                    propertyName={accommodation.property_name}
+                    type={accommodation.type}
+                    university={accommodation.university || ""}
+                    address={accommodation.address}
+                    city={accommodation.city || ""}
+                    monthlyCost={accommodation.monthly_cost || 0}
+                    rating={accommodation.rating || 0}
+                    nsfasAccredited={accommodation.nsfas_accredited || false}
+                    genderPolicy={accommodation.gender_policy || ""}
+                    website={accommodation.website || null}
+                    amenities={accommodation.amenities || []}
+                    imageUrls={accommodation.image_urls || []}
+                  />
                 ))}
               </div>
             ) : (
