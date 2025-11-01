@@ -684,6 +684,8 @@ const ListingDetail = () => {
               </Card>
             </div>
 
+            {/* Note: AI insights offers a more detailed map (satellite + Street View) */}
+            <div className="text-center mb-4 text-sm text-muted-foreground">View AI insight for more detailed map</div>
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <Card>
