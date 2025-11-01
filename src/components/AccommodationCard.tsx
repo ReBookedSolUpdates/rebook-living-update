@@ -345,6 +345,10 @@ const AccommodationCard = ({
               </div>
             </DialogContent>
           </Dialog>
+
+          <Button variant="ghost" size="sm" onClick={shareListing} className="rounded-full border border-primary/20 w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10">
+            <Share className="w-4 h-4 text-primary" />
+          </Button>
         </div>
 
         <div>
