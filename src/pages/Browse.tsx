@@ -142,6 +142,11 @@ const Browse = () => {
         
         <div className="mt-8">
 
+          {/* Top ad below the alert and above the listings */}
+          <div className="mb-4">
+            <Ad />
+          </div>
+
           <div>
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
