@@ -770,21 +770,6 @@ const ListingDetail = () => {
                       <div className="flex items-center gap-2">
                         <div className="text-xs text-muted-foreground">Satellite & Street View available in AI Insights</div>
                       </div>
-                      <div>
-                        <Dialog open={expandOpen} onOpenChange={setExpandOpen}>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="ghost">Expand Map</Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-4xl w-[95vw] p-0">
-                            <div className="p-4">
-                              <DialogHeader>
-                                <DialogTitle>Map - {listing.property_name}</DialogTitle>
-                              </DialogHeader>
-                              <div ref={largeMapRef} className="h-[60vh] w-full rounded-md overflow-hidden bg-muted mt-4" />
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
                     </div>
 
                     <div ref={mapRef} id="gmaps" className="h-64 w-full rounded-md overflow-hidden bg-muted" />
