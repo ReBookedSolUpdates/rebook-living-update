@@ -67,7 +67,7 @@ The final output must be a valid JSON array ([ ... ]) containing all entries in 
    * Use actual Google rating if available.
    * Otherwise use nearby property averages (3.0–5.0 scale).
 8. website:
-   * Use the property’s or management company���s verified website.
+   * Use the property’s or management company’s verified website.
 9. description:
    * Write one short factual summary (1–2 sentences) using verified information.
 10. Combine duplicates — if multiple listings share the same address, merge them and update the units count.
@@ -103,10 +103,10 @@ Example Output:
 
   const handleCopyPrompt = async () => {
     try {
-      await navigator.clipboard.writeText(csvPrompt);
+      await navigator.clipboard.writeText(jsonPrompt);
       toast({
         title: "Copied!",
-        description: "CSV extraction prompt copied to clipboard",
+        description: "JSON extraction prompt copied to clipboard",
       });
     } catch (err) {
       toast({
