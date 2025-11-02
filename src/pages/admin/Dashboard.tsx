@@ -124,8 +124,8 @@ Example Output:
           <h1 className="text-2xl sm:text-3xl font-bold">Panel 2025-05-19</h1>
           <Button onClick={handleCopyPrompt} variant="outline" size="sm" className="w-full sm:w-auto">
             <Copy className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Copy CSV Prompt</span>
-            <span className="sm:hidden">CSV Prompt</span>
+            <span className="hidden sm:inline">Copy JSON Prompt</span>
+            <span className="sm:hidden">JSON Prompt</span>
           </Button>
         </div>
 
