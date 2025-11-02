@@ -53,6 +53,7 @@ const SearchBar = ({ compact = false }) => {
   const navigate = useNavigate();
   const [location, setLocation] = useState("");
   const [university, setUniversity] = useState("All Universities");
+  const [province, setProvince] = useState("All Provinces");
   const [maxCost, setMaxCost] = useState("");
   const [minRating, setMinRating] = useState<number>(0);
   const [amenities, setAmenities] = useState<string[]>([]);
