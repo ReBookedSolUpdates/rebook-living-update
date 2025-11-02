@@ -65,6 +65,7 @@ const SearchBar = ({ compact = false }) => {
     const params = new URLSearchParams();
     if (location) params.set("location", location);
     if (university !== "All Universities") params.set("university", university);
+    if (province && province !== "All Provinces") params.set("province", province);
     if (maxCost) params.set("maxCost", maxCost);
     if (nsfasOnly) params.set("nsfas", "true");
     if (minRating > 0) params.set("minRating", String(minRating));
