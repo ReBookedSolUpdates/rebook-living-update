@@ -10,21 +10,50 @@ import { useNavigate } from "react-router-dom";
 const SA_UNIVERSITIES = [
   "All Universities",
   "University of Cape Town",
+  "University of the Witwatersrand",
   "University of Johannesburg",
   "University of Pretoria",
   "Stellenbosch University",
   "University of KwaZulu-Natal",
-  "University of the Witwatersrand",
   "Rhodes University",
   "North-West University",
   "Tshwane University of Technology",
   "Cape Peninsula University of Technology",
+  "Durban University of Technology",
+  "University of the Western Cape",
+  "University of Fort Hare",
+  "University of the Free State",
+  "University of Zululand",
+  "Walter Sisulu University",
+  "Nelson Mandela University",
+  "Mangosuthu University of Technology",
+  "Sol Plaatje University",
+  "University of South Africa (UNISA)",
+  "Central University of Technology",
+  "Vaal University of Technology",
+  "University of Limpopo",
+  "University of Mpumalanga",
+  "Sefako Makgatho Health Sciences University",
+];
+
+const SA_PROVINCES = [
+  "All Provinces",
+  "Western Cape",
+  "Eastern Cape",
+  "Northern Cape",
+  "Free State",
+  "KwaZulu-Natal",
+  "North West",
+  "Gauteng",
+  "Mpumalanga",
+  "Limpopo",
 ];
 
 const SearchBar = ({ compact = false }) => {
   const navigate = useNavigate();
   const [location, setLocation] = useState("");
   const [university, setUniversity] = useState("All Universities");
+  const [province, setProvince] = useState("All Provinces");
   const [maxCost, setMaxCost] = useState("");
   const [minRating, setMinRating] = useState<number>(0);
   const [amenities, setAmenities] = useState<string[]>([]);
@@ -36,6 +65,7 @@ const SearchBar = ({ compact = false }) => {
     const params = new URLSearchParams();
     if (location) params.set("location", location);
     if (university !== "All Universities") params.set("university", university);
+    if (province && province !== "All Provinces") params.set("province", province);
     if (maxCost) params.set("maxCost", maxCost);
     if (nsfasOnly) params.set("nsfas", "true");
     if (minRating > 0) params.set("minRating", String(minRating));
@@ -128,6 +158,22 @@ const SearchBar = ({ compact = false }) => {
               />
               <div className="text-xs text-muted-foreground mt-2">Up to R {maxCost || 0}</div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Province</label>
+            <Select value={province} onValueChange={setProvince}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SA_PROVINCES.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

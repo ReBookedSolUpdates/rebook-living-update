@@ -14,6 +14,7 @@ const Browse = () => {
   const [searchParams] = useSearchParams();
   const location = searchParams.get("location") || "";
   const university = searchParams.get("university") || "";
+  const province = searchParams.get("province") || "";
   const maxCost = searchParams.get("maxCost") || "";
   const minRating = parseFloat(searchParams.get("minRating") || "") || 0;
   const amenitiesParam = searchParams.get("amenities") || "";
@@ -29,7 +30,7 @@ const Browse = () => {
   // Reset page when filters/search params change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [location, university, maxCost, minRating, amenitiesParam, nsfasParam, selectedGender, sortBy]);
+  }, [location, university, province, maxCost, minRating, amenitiesParam, nsfasParam, selectedGender, sortBy]);
 
   const { data: pageResult, isLoading } = useQuery({
     queryKey: ["accommodations", location, university, maxCost, nsfasParam, sortBy, minRating, amenitiesParam, selectedGender, currentPage],
@@ -56,6 +57,10 @@ const Browse = () => {
 
       if (nsfasParam) {
         query = query.eq("nsfas_accredited", true);
+      }
+
+      if (province) {
+        query = query.eq("province", province);
       }
 
       if (minRating > 0) {
