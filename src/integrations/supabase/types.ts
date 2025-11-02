@@ -193,9 +193,46 @@ export type Database = {
         }
         Relationships: []
       }
+      offerwall_completions: {
+        Row: {
+          completed_at: string
+          created_at: string
+          currency: string
+          id: string
+          offer_id: string
+          provider: string | null
+          raw_payload: Json | null
+          reward_amount: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          offer_id: string
+          provider?: string | null
+          raw_payload?: Json | null
+          reward_amount?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          offer_id?: string
+          provider?: string | null
+          raw_payload?: Json | null
+          reward_amount?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
+          credits: number
           diversity: string | null
           email: string
           first_name: string | null
@@ -207,6 +244,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          credits?: number
           diversity?: string | null
           email: string
           first_name?: string | null
@@ -218,6 +256,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          credits?: number
           diversity?: string | null
           email?: string
           first_name?: string | null
@@ -335,6 +374,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_user_credits: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

@@ -1,1 +1,4 @@
 project_id = "gzihagvdpdjcoyjpvyvs"
+
+[functions.offerwall-callback]
+verify_jwt = false
