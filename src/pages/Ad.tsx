@@ -1,51 +1,49 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
-
-const OFFERWALL_SUBDOMAIN = "https://living.rebookedsolutions.co.za";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import AdComponent from "@/components/Ad";
+import Layout from "@/components/Layout";
 
 const Ad = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const returnPath = params.get('return') || '/';
 
-  useEffect(() => {
-    const redirectToOfferwall = async () => {
-      try {
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          // If no user, redirect back without reward
-          window.location.href = returnPath;
-          return;
-        }
-
-        // Build offerwall URL with user_id and return path
-        const offerwallUrl = new URL(`${OFFERWALL_SUBDOMAIN}/wall`);
-        offerwallUrl.searchParams.set('user_id', user.id);
-        offerwallUrl.searchParams.set('return', window.location.origin + returnPath);
-        
-        // Redirect to offerwall
-        window.location.href = offerwallUrl.toString();
-      } catch (error) {
-        console.error('Error redirecting to offerwall:', error);
-        // Fallback: redirect back to return path
-        window.location.href = returnPath;
-      }
-    };
-
-    redirectToOfferwall();
-  }, [returnPath]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-        <p className="text-muted-foreground">Redirecting to offerwall...</p>
+    <Layout>
+      <div className="min-h-screen bg-background py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(returnPath)}
+            className="mb-6"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go Back
+          </Button>
+
+          <div className="bg-card rounded-lg border p-6 mb-6">
+            <h1 className="text-2xl font-bold mb-4">Support Our Platform</h1>
+            <p className="text-muted-foreground mb-4">
+              View these ads to help us keep ReBooked Living free for students.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <AdComponent className="min-h-[250px]" />
+            <AdComponent className="min-h-[250px]" />
+            <AdComponent className="min-h-[250px]" />
+          </div>
+
+          <div className="mt-6 text-center">
+            <Button onClick={() => navigate(returnPath)}>
+              Continue to Content
+            </Button>
+          </div>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
