@@ -259,8 +259,12 @@ const ListingDetail = () => {
           center: { lat: -33.9249, lng: 18.4241 },
           zoom: 15,
           mapTypeId: 'roadmap',
-          mapTypeControl: false,
-          streetViewControl: false,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            mapTypeIds: ['roadmap', 'satellite'],
+          },
+          streetViewControl: true,
         });
 
         mapInstanceRef.current = map;
@@ -319,6 +323,34 @@ const ListingDetail = () => {
     }
   }, [mapType]);
 
+  const enterStreetView = () => {
+    try {
+      const google = (window as any).google;
+      if (!google || !mapInstanceRef.current) return;
+
+      const svService = new google.maps.StreetViewService();
+      const svPanorama = mapInstanceRef.current.getStreetView();
+      const position = markerRef.current && markerRef.current.getPosition ? markerRef.current.getPosition() : mapInstanceRef.current.getCenter();
+
+      if (!position) {
+        toast.error('No location available for Street View');
+        return;
+      }
+
+      svService.getPanorama({ location: position, radius: 50 }, (data: any, status: any) => {
+        if (status === google.maps.StreetViewStatus.OK && data && svPanorama) {
+          svPanorama.setPano(data.location.pano);
+          svPanorama.setPov({ heading: 270, pitch: 0 });
+          svPanorama.setVisible(true);
+        } else {
+          toast.error('Street View not available at this location');
+        }
+      });
+    } catch (e) {
+      console.warn('enterStreetView error', e);
+      toast.error('Failed to enter Street View');
+    }
+  };
 
   const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -600,6 +632,14 @@ const ListingDetail = () => {
                     <CardTitle>Map</CardTitle>
                   </CardHeader>
                   <CardContent>
+
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setMapType(prev => prev === 'roadmap' ? 'satellite' : 'roadmap')}>{mapType === 'roadmap' ? 'Satellite' : 'Map'}</Button>
+                        <Button size="sm" onClick={() => enterStreetView()}>Enter Street View</Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">Satellite & Street View available</div>
+                    </div>
 
                     <div ref={mapRef} id="gmaps" className="h-64 w-full rounded-md overflow-hidden bg-muted" />
                   </CardContent>
