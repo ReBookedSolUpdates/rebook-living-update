@@ -30,7 +30,7 @@ const Browse = () => {
   // Reset page when filters/search params change
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [location, university, maxCost, minRating, amenitiesParam, nsfasParam, selectedGender, sortBy]);
+  }, [location, university, province, maxCost, minRating, amenitiesParam, nsfasParam, selectedGender, sortBy]);
 
   const { data: pageResult, isLoading } = useQuery({
     queryKey: ["accommodations", location, university, maxCost, nsfasParam, sortBy, minRating, amenitiesParam, selectedGender, currentPage],
