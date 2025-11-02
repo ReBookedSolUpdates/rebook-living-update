@@ -130,6 +130,58 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Accredited Universities carousel */}
+      <section className="py-8">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Accredited Universities From</h2>
+          <p className="text-sm text-muted-foreground mb-4">Explore accommodations accredited for these universities.</p>
+
+          <div className="relative">
+            <Carousel>
+              <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+              <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+              <CarouselContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                {[
+                  "University of Cape Town",
+                  "University of the Witwatersrand",
+                  "University of Johannesburg",
+                  "University of Pretoria",
+                  "Stellenbosch University",
+                  "University of KwaZulu-Natal",
+                  "Rhodes University",
+                  "North-West University",
+                  "Tshwane University of Technology",
+                  "Cape Peninsula University of Technology",
+                  "Durban University of Technology",
+                  "University of the Western Cape",
+                  "University of Fort Hare",
+                  "University of the Free State",
+                  "University of Zululand",
+                  "Walter Sisulu University",
+                  "Nelson Mandela University",
+                  "Mangosuthu University of Technology",
+                  "Sol Plaatje University",
+                  "University of South Africa (UNISA)",
+                  "Central University of Technology",
+                  "Vaal University of Technology",
+                  "University of Limpopo",
+                  "University of Mpumalanga",
+                  "Sefako Makgatho Health Sciences University",
+                ].map((u) => {
+                  const label = encodeURIComponent(u.replace(/\s+/g, '+'));
+                  const logo = `https://via.placeholder.com/160x80?text=${label}`;
+                  return (
+                    <CarouselItem key={u} className="flex flex-col items-center p-4 bg-card rounded-lg">
+                      <img src={logo} alt={u} className="w-full h-20 object-contain mb-2" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }} />
+                      <div className="text-sm text-center">{u}</div>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+            </Carousel>
+          </div>
+        </div>
+      </section>
 
       {/* Section header similar to "Workflow Templates" */}
       <section className="py-12 md:py-16">
