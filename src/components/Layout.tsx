@@ -136,10 +136,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <div>
               <h4 className="font-semibold mb-4">Explore</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/browse" className="text-muted-foreground hover:text-primary">Browse Listings</Link></li>
-                <li><Link to="/about" className="text-muted-foreground hover:text-primary">About Us</Link></li>
-                <li><Link to="/contact" className="text-muted-foreground hover:text-primary">Contact</Link></li>
-                <li><Link to="/profile" className="text-muted-foreground hover:text-primary">My Profile</Link></li>
+                <li><Link to="/browse" onClick={(e) => handleFooterNav(e, '/browse')} className="text-muted-foreground hover:text-primary">Browse Listings</Link></li>
+                <li><Link to="/about" onClick={(e) => handleFooterNav(e, '/about')} className="text-muted-foreground hover:text-primary">About Us</Link></li>
+                <li><Link to="/contact" onClick={(e) => handleFooterNav(e, '/contact')} className="text-muted-foreground hover:text-primary">Contact</Link></li>
+                <li><Link to="/profile" onClick={(e) => handleFooterNav(e, '/profile')} className="text-muted-foreground hover:text-primary">My Profile</Link></li>
               </ul>
             </div>
 
