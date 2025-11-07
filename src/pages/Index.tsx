@@ -118,7 +118,7 @@ const Index = () => {
       {/* Accredited Universities carousel (continuous auto-scrolling marquee) */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Accredited Universities From</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Accredited Accommodations From</h2>
           <p className="text-sm text-muted-foreground mb-4">Explore accommodations accredited for these universities.</p>
 
           <style>{`

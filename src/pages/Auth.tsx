@@ -38,6 +38,22 @@ const Auth = () => {
     checkUser();
   }, [navigate]);
 
+  // Handle auth callback from email confirmation
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (accessToken && type === 'signup') {
+      // Email confirmed successfully, redirect to profile
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          navigate("/profile");
+        }
+      });
+    }
+  }, [navigate]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -86,6 +102,8 @@ const Auth = () => {
         title: "Success",
         description: "Please check your email to verify your account",
       });
+      // Switch to sign in tab with email pre-filled
+      setTab("signin");
     }
   };
 
