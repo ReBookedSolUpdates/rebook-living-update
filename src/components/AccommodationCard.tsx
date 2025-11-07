@@ -317,7 +317,7 @@ const AccommodationCard = ({
                 <Info className="w-4 h-4 text-primary" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-sm w-full rounded-xl p-4">
+            <DialogContent className="max-w-xs w-[90vw] rounded-xl p-4">
               <DialogHeader>
                 <DialogTitle className="text-base">{propertyName} — Info</DialogTitle>
                 <DialogDescription>

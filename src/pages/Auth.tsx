@@ -23,6 +23,7 @@ const Auth = () => {
   const [tab, setTab] = useState<"signin" | "signup" | "forgot">("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   useEffect(() => {
     if (location.hash === "#signup") setTab("signup");
@@ -163,6 +164,50 @@ const Auth = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResendingEmail(true);
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth`,
+      },
+    });
+
+    setResendingEmail(false);
+
+    if (error) {
+      if (error.message.includes("rate limit") || error.message.includes("429")) {
+        toast({
+          title: "Too Many Requests",
+          description: "Email sending is temporarily limited. Please try again in a few minutes.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Success",
+        description: "Verification email sent! Check your inbox.",
+      });
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[80vh]">
@@ -221,6 +266,18 @@ const Auth = () => {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
                   </Button>
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-2">Haven't received your verification email?</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleResendVerification}
+                      disabled={resendingEmail}
+                    >
+                      {resendingEmail ? "Sending..." : "Resend Verification Email"}
+                    </Button>
+                  </div>
                 </form>
               </TabsContent>
 

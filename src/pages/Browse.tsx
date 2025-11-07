@@ -145,8 +145,8 @@ const Browse = () => {
         <SearchBar />
 
         <Alert className="mt-4 mb-8 bg-muted/50 border-muted">
-          <Info className="h-4 w-4" />
-          <AlertDescription className="text-xs">
+          <Info className="h-4 w-4 flex-shrink-0" />
+          <AlertDescription className="text-xs sm:text-sm">
             We try our best to ensure all information is correct and accurate. We advise doing some of your own research as well on the accommodation before making any actions.
           </AlertDescription>
         </Alert>
@@ -167,7 +167,7 @@ const Browse = () => {
               </div>
             ) : paginatedAccommodations && paginatedAccommodations.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {(() => {
                     const nodes: React.ReactNode[] = [];
                     paginatedAccommodations.forEach((accommodation, idx) => {
@@ -193,7 +193,7 @@ const Browse = () => {
                       // After every 2 accommodations, insert an ad before the next accommodation (but not after last item)
                       if ((idx + 1) % 2 === 0 && idx !== paginatedAccommodations.length - 1) {
                         nodes.push(
-                          <div key={`ad-${idx}`} className="col-span-1 md:col-span-2 lg:col-span-3">
+                          <div key={`ad-${idx}`} className="col-span-1 sm:col-span-2 lg:col-span-3">
                             <Ad />
                           </div>
                         );

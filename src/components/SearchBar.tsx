@@ -109,17 +109,16 @@ const SearchBar = ({ compact = false }) => {
           />
         </div>
 
-        <div className={`flex items-end md:items-center gap-2 md:gap-4 md:col-span-2 transition-all duration-500 ${showAdvanced ? 'md:justify-end' : 'md:justify-center'}`}>
-          <Button onClick={() => setShowAdvanced((v) => !v)} variant="outline" className="inline-flex">
+        <div className={`flex flex-col sm:flex-row items-stretch sm:items-end md:items-center gap-2 md:gap-4 md:col-span-2 transition-all duration-500 ${showAdvanced ? 'md:justify-end' : 'md:justify-center'}`}>
+          <Button onClick={() => setShowAdvanced((v) => !v)} variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-3 py-2">
             {showAdvanced ? 'Hide Filters' : 'Show Filters'}
           </Button>
 
-          <div className="flex-1">
-            <Button onClick={handleSearch} className="w-full bg-primary hover:bg-primary-hover">
-              <Search className="mr-2 h-4 w-4" />
-              Search Accommodation
-            </Button>
-          </div>
+          <Button onClick={handleSearch} className="w-full sm:flex-1 bg-primary hover:bg-primary-hover text-sm sm:text-base">
+            <Search className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Search Accommodation</span>
+            <span className="sm:hidden">Search</span>
+          </Button>
         </div>
       </div>
 
