@@ -180,8 +180,11 @@ const Browse = () => {
                 <div className="space-y-6">
                   {(() => {
                     const rows = [];
-                    for (let i = 0; i < paginatedAccommodations.length; i += 3) {
-                      const rowItems = paginatedAccommodations.slice(i, i + 3);
+                    // Laptop: 3 columns, Mobile: 1 column, Tablet: 2 columns
+                    const itemsPerRow = isLargeScreen ? 3 : 2;
+
+                    for (let i = 0; i < paginatedAccommodations.length; i += itemsPerRow) {
+                      const rowItems = paginatedAccommodations.slice(i, i + itemsPerRow);
                       rows.push(
                         <div key={`row-${i}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                           {rowItems.map((accommodation) => (
@@ -206,7 +209,7 @@ const Browse = () => {
                       );
 
                       // Add ad after each row, except the last one
-                      if (i + 3 < paginatedAccommodations.length) {
+                      if (i + itemsPerRow < paginatedAccommodations.length) {
                         rows.push(
                           <div key={`ad-row-${i}`}>
                             <Ad />
