@@ -167,25 +167,45 @@ const Browse = () => {
               </div>
             ) : paginatedAccommodations && paginatedAccommodations.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {paginatedAccommodations.map((accommodation) => (
-                    <AccommodationCard
-                      key={accommodation.id}
-                      id={accommodation.id}
-                      propertyName={accommodation.property_name}
-                      type={accommodation.type}
-                      university={accommodation.university || ""}
-                      address={accommodation.address}
-                      city={accommodation.city || ""}
-                      monthlyCost={accommodation.monthly_cost || 0}
-                      rating={accommodation.rating || 0}
-                      nsfasAccredited={accommodation.nsfas_accredited || false}
-                      genderPolicy={accommodation.gender_policy || ""}
-                      website={accommodation.website || null}
-                      amenities={accommodation.amenities || []}
-                      imageUrls={accommodation.image_urls || []}
-                    />
-                  ))}
+                <div className="space-y-6">
+                  {(() => {
+                    const rows = [];
+                    for (let i = 0; i < paginatedAccommodations.length; i += 3) {
+                      const rowItems = paginatedAccommodations.slice(i, i + 3);
+                      rows.push(
+                        <div key={`row-${i}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                          {rowItems.map((accommodation) => (
+                            <AccommodationCard
+                              key={accommodation.id}
+                              id={accommodation.id}
+                              propertyName={accommodation.property_name}
+                              type={accommodation.type}
+                              university={accommodation.university || ""}
+                              address={accommodation.address}
+                              city={accommodation.city || ""}
+                              monthlyCost={accommodation.monthly_cost || 0}
+                              rating={accommodation.rating || 0}
+                              nsfasAccredited={accommodation.nsfas_accredited || false}
+                              genderPolicy={accommodation.gender_policy || ""}
+                              website={accommodation.website || null}
+                              amenities={accommodation.amenities || []}
+                              imageUrls={accommodation.image_urls || []}
+                            />
+                          ))}
+                        </div>
+                      );
+
+                      // Add ad after each row, except the last one
+                      if (i + 3 < paginatedAccommodations.length) {
+                        rows.push(
+                          <div key={`ad-row-${i}`}>
+                            <Ad />
+                          </div>
+                        );
+                      }
+                    }
+                    return rows;
+                  })()}
                 </div>
                 
                 {totalPages > 1 && (
