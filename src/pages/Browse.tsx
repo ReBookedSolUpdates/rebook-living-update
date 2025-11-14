@@ -25,7 +25,17 @@ const Browse = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 9;
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const ITEMS_PER_PAGE = isLargeScreen ? 15 : 9;
 
   // Reset page when filters/search params change
   React.useEffect(() => {
@@ -167,39 +177,47 @@ const Browse = () => {
               </div>
             ) : paginatedAccommodations && paginatedAccommodations.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="space-y-6">
                   {(() => {
-                    const nodes: React.ReactNode[] = [];
-                    paginatedAccommodations.forEach((accommodation, idx) => {
-                      nodes.push(
-                        <AccommodationCard
-                          key={accommodation.id}
-                          id={accommodation.id}
-                          propertyName={accommodation.property_name}
-                          type={accommodation.type}
-                          university={accommodation.university || ""}
-                          address={accommodation.address}
-                          city={accommodation.city || ""}
-                          monthlyCost={accommodation.monthly_cost || 0}
-                          rating={accommodation.rating || 0}
-                          nsfasAccredited={accommodation.nsfas_accredited || false}
-                          genderPolicy={accommodation.gender_policy || ""}
-                          website={accommodation.website || null}
-                          amenities={accommodation.amenities || []}
-                          imageUrls={accommodation.image_urls || []}
-                        />
+                    const rows = [];
+                    // Laptop: 3 columns, Mobile: 1 column, Tablet: 2 columns
+                    const itemsPerRow = isLargeScreen ? 3 : 2;
+
+                    for (let i = 0; i < paginatedAccommodations.length; i += itemsPerRow) {
+                      const rowItems = paginatedAccommodations.slice(i, i + itemsPerRow);
+                      rows.push(
+                        <div key={`row-${i}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                          {rowItems.map((accommodation) => (
+                            <AccommodationCard
+                              key={accommodation.id}
+                              id={accommodation.id}
+                              propertyName={accommodation.property_name}
+                              type={accommodation.type}
+                              university={accommodation.university || ""}
+                              address={accommodation.address}
+                              city={accommodation.city || ""}
+                              monthlyCost={accommodation.monthly_cost || 0}
+                              rating={accommodation.rating || 0}
+                              nsfasAccredited={accommodation.nsfas_accredited || false}
+                              genderPolicy={accommodation.gender_policy || ""}
+                              website={accommodation.website || null}
+                              amenities={accommodation.amenities || []}
+                              imageUrls={accommodation.image_urls || []}
+                            />
+                          ))}
+                        </div>
                       );
 
-                      // After every 2 accommodations, insert an ad before the next accommodation (but not after last item)
-                      if ((idx + 1) % 2 === 0 && idx !== paginatedAccommodations.length - 1) {
-                        nodes.push(
-                          <div key={`ad-${idx}`} className="col-span-1 sm:col-span-2 lg:col-span-3">
+                      // Add ad after each row, except the last one
+                      if (i + itemsPerRow < paginatedAccommodations.length) {
+                        rows.push(
+                          <div key={`ad-row-${i}`}>
                             <Ad />
                           </div>
                         );
                       }
-                    });
-                    return nodes;
+                    }
+                    return rows;
                   })()}
                 </div>
                 
