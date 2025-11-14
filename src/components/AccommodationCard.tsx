@@ -151,7 +151,8 @@ const AccommodationCard = ({
 
 
   return (
-    <Card className="overflow-hidden rounded-2xl hover:shadow-lg transition-shadow">
+    <Link to={`/listing/${id}?return=${encodeURIComponent(location.pathname + location.search)}`} state={{ images: (localImages && localImages.length > 0) ? localImages : (imageUrls && imageUrls.length > 0) ? imageUrls : [thumb] }} className="block h-full">
+      <Card className="overflow-hidden rounded-2xl hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
       {localImages && localImages.length > 0 ? (
         <div className="w-full h-48 overflow-hidden bg-muted">
           <img
@@ -235,14 +236,8 @@ const AccommodationCard = ({
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to={`/listing/${id}?return=${encodeURIComponent(location.pathname + location.search)}`} state={{ images: (localImages && localImages.length > 0) ? localImages : (imageUrls && imageUrls.length > 0) ? imageUrls : [thumb] }}>
-            <Button variant="default" size="sm" className="bg-primary hover:bg-primary-hover rounded-full">
-              View Details
-            </Button>
-          </Link>
-
+      <CardFooter className="p-4 pt-0 flex items-center justify-between mt-auto">
+        <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="rounded-full border border-primary/20 w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10">
@@ -271,12 +266,12 @@ const AccommodationCard = ({
             </DialogContent>
           </Dialog>
 
-          <Button variant="ghost" size="sm" onClick={shareListing} className="rounded-full border border-primary/20 w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10">
+          <Button variant="ghost" size="sm" onClick={(e) => { e.preventDefault(); shareListing(); }} className="rounded-full border border-primary/20 w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10">
             <Share className="w-4 h-4 text-primary" />
           </Button>
         </div>
 
-        <div>
+        <div onClick={(e) => e.preventDefault()}>
           <Button
             variant="ghost"
             size="icon"
@@ -290,7 +285,8 @@ const AccommodationCard = ({
           </Button>
         </div>
       </CardFooter>
-    </Card>
+      </Card>
+    </Link>
   );
 };
 
