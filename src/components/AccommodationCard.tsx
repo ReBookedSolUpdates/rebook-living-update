@@ -154,9 +154,9 @@ const AccommodationCard = ({
     <Link
       to={`/listing/${id}?return=${encodeURIComponent(location.pathname + location.search)}`}
       state={{ images: (localImages && localImages.length > 0) ? localImages : (imageUrls && imageUrls.length > 0) ? imageUrls : [thumb] }}
-      className="block h-full"
+      className="block"
     >
-      <Card className="overflow-hidden rounded-2xl hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
+      <Card className="overflow-hidden rounded-2xl hover:shadow-lg transition-shadow cursor-pointer">
         {localImages && localImages.length > 0 ? (
           <div className="w-full h-48 overflow-hidden bg-muted">
             <img
@@ -240,7 +240,7 @@ const AccommodationCard = ({
           </div>
         </CardContent>
 
-        <CardFooter className="p-4 pt-0 flex items-center justify-between mt-auto">
+        <CardFooter className="p-4 pt-0 flex items-center justify-between">
           <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
             <Dialog>
               <DialogTrigger asChild>
