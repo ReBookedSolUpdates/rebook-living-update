@@ -25,7 +25,7 @@ const Browse = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [selectedGender, setSelectedGender] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 9;
+  const ITEMS_PER_PAGE = 15;
 
   // Reset page when filters/search params change
   React.useEffect(() => {
