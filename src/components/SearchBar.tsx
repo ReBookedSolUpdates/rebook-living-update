@@ -151,8 +151,8 @@ const SearchBar = ({ compact = false }) => {
         </div>
       </div>
 
-      <div className={`overflow-hidden transform origin-top transition-all duration-300 ${showAdvanced ? 'max-h-[400px] scale-y-100 opacity-100' : 'max-h-0 scale-y-0 opacity-0'}`}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+      <div className={`overflow-y-auto transform origin-top transition-all duration-300 ${showAdvanced ? 'max-h-[600px] scale-y-100 opacity-100' : 'max-h-0 scale-y-0 opacity-0'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pb-4">
           <div className="space-y-2">
             <label className="text-sm font-medium flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-primary" />

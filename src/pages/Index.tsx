@@ -55,7 +55,7 @@ const Index = () => {
       <section className="relative h-[65vh] md:h-[72vh]">
         <img
           src="https://picsum.photos/id/1018/1600/900"
-          alt="Student accommodation interior"
+          alt="Modern student accommodation with spacious living areas and study rooms near South African universities"
           onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
@@ -67,12 +67,12 @@ const Index = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight text-white">
-                  All‑in‑one Student Housing Hub
+                  Find Student Accommodation Near Your University
                 </h1>
               </div>
               <div className="flex flex-col items-start gap-6">
                 <p className="text-base md:text-lg text-white/90 max-w-md">
-                  Smart search, curated listings, and NSFAS‑ready filters. Designed to help you find the perfect student home fast.
+                  Browse verified, NSFAS-accredited student rooms across South Africa. Compare prices, amenities, and locations to find your perfect home.
                 </p>
                 <div className="flex items-center gap-3">
                   <Link to="/browse">
@@ -93,6 +93,7 @@ const Index = () => {
       {/* Feature tiles - four up row using brand colors */}
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
+          <h2 className="sr-only">Why Choose ReBooked Living for Student Accommodation</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="rounded-2xl p-6 bg-secondary text-secondary-foreground">
               <div className="text-2xl font-semibold">Browse</div>
@@ -184,6 +185,10 @@ const Index = () => {
       <section id="search" className="py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Search Student Accommodation</h2>
+            <p className="text-center text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Use our advanced filters to find NSFAS-accredited rooms, compare monthly costs, and discover accommodation near your university.
+            </p>
             <SearchBar />
           </div>
         </div>
@@ -194,10 +199,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Latest Listings</h2>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Featured Student Rooms</h2>
             </div>
             <p className="text-sm md:text-base text-muted-foreground max-w-prose">
-              Freshly added student accommodation from across South Africa. Filter by city, budget, and NSFAS to find a great fit.
+              Browse top-rated, NSFAS-approved accommodation near major universities. Safe, affordable options from R1500/month.
             </p>
           </div>
         </div>
@@ -207,10 +212,10 @@ const Index = () => {
       <section className="pb-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
-            <span className="text-sm text-muted-foreground">Showing top rated</span>
+            <span className="text-sm text-muted-foreground">Top rated NSFAS-accredited student accommodation</span>
             <Link to="/browse">
               <Button variant="outline" className="items-center gap-2 rounded-full">
-                View all
+                Browse All Listings
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
