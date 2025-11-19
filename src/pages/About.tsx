@@ -11,8 +11,8 @@ const About = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
             <div>
-              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4">About ReBooked Living</h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mb-6">We help South African students find safe, affordable, and convenient accommodation near their universities. Our platform focuses on verified listings, clear pricing, and tools that make searching and comparing options simple.</p>
+              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4">About ReBooked Living - Your Student Accommodation Partner</h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mb-6">We help South African students find safe, affordable, and NSFAS-accredited accommodation near their universities. Our platform provides verified listings, transparent pricing, and smart filters designed specifically for students.</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <div className="flex items-start gap-3 p-4 bg-card border rounded-lg">
@@ -38,10 +38,10 @@ const About = () => {
 
               <div className="flex gap-3">
                 <Link to="/browse">
-                  <Button className="bg-primary text-white">Browse Listings</Button>
+                  <Button className="bg-primary text-white">Search Student Accommodation</Button>
                 </Link>
                 <Link to="/contact">
-                  <Button variant="outline">Contact Support</Button>
+                  <Button variant="outline">Get Help</Button>
                 </Link>
               </div>
             </div>
@@ -61,7 +61,7 @@ const About = () => {
             <div className="p-6 bg-card border rounded-lg shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <Shield className="w-6 h-6 text-primary" />
-                <h3 className="font-semibold">Our Mission</h3>
+                <h2 className="font-semibold text-lg">Our Mission</h2>
               </div>
               <p className="text-sm text-muted-foreground">Make student housing simple, transparent, and accessible for every student in South Africa.</p>
             </div>
@@ -69,7 +69,7 @@ const About = () => {
             <div className="p-6 bg-card border rounded-lg shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 <Users className="w-6 h-6 text-primary" />
-                <h3 className="font-semibold">Our Values</h3>
+                <h2 className="font-semibold text-lg">Our Values</h2>
               </div>
               <p className="text-sm text-muted-foreground">Trust, affordability, and a student-first approach guide our product decisions and partnerships.</p>
             </div>

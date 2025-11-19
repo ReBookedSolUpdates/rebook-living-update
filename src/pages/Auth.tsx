@@ -24,6 +24,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
 
   useEffect(() => {
     if (location.hash === "#signup") setTab("signup");
@@ -103,7 +104,8 @@ const Auth = () => {
         title: "Success",
         description: "Please check your email to verify your account",
       });
-      // Switch to sign in tab with email pre-filled
+      // Switch to sign in tab with email pre-filled and show resend option
+      setJustSignedUp(true);
       setTab("signin");
     }
   };
@@ -266,18 +268,20 @@ const Auth = () => {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
                   </Button>
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-2">Haven't received your verification email?</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={handleResendVerification}
-                      disabled={resendingEmail}
-                    >
-                      {resendingEmail ? "Sending..." : "Resend Verification Email"}
-                    </Button>
-                  </div>
+                  {justSignedUp && (
+                    <div className="mt-4 pt-4 border-t">
+                      <p className="text-sm text-muted-foreground mb-2">Haven't received your verification email?</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={handleResendVerification}
+                        disabled={resendingEmail}
+                      >
+                        {resendingEmail ? "Sending..." : "Resend Verification Email"}
+                      </Button>
+                    </div>
+                  )}
                 </form>
               </TabsContent>
 
