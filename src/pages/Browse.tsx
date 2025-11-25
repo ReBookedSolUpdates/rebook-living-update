@@ -163,12 +163,7 @@ const Browse = () => {
         
         <div className="mt-8">
 
-          {/* Top ad below the alert and above the listings */}
-          <div className="mb-4">
-            <Ad />
-          </div>
-
-          <div>
+          <div data-listings-container>
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
@@ -208,10 +203,10 @@ const Browse = () => {
                         </div>
                       );
 
-                      // Add ad after each row, except the last one
-                      if (i + itemsPerRow < paginatedAccommodations.length) {
+                      // Add ad only after the first row
+                      if (i === 0) {
                         rows.push(
-                          <div key={`ad-row-${i}`}>
+                          <div key={`ad-row-${i}`} className="my-4">
                             <Ad />
                           </div>
                         );
@@ -220,7 +215,7 @@ const Browse = () => {
                     return rows;
                   })()}
                 </div>
-                
+
                 {totalPages > 1 && (
                   <div className="mt-8">
                     <Pagination>

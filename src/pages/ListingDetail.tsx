@@ -221,7 +221,7 @@ const ListingDetail = () => {
   const passedImages = (location.state as any)?.images as string[] | undefined;
 
   const [reviews, setReviews] = useState<any[] | null>(null);
-  const [photos, setPhotos] = useState<string[] | null>(passedImages && passedImages.length > 0 ? passedImages.slice(0,3) : null);
+  const [photos, setPhotos] = useState<string[] | null>(passedImages && passedImages.length > 0 ? passedImages : null);
   const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number>(0);
 
@@ -293,11 +293,11 @@ const ListingDetail = () => {
                 service.getDetails({ placeId: place.place_id, fields: ['reviews', 'rating', 'name', 'photos', 'url'] }, (detail: any, dStatus: any) => {
                   if (dStatus === google.maps.places.PlacesServiceStatus.OK && detail) {
                     if (detail.reviews) setReviews(detail.reviews.slice(0, 5));
-                    // Only set photos from Google if no images were passed from the listing card
-                    if ((!photos || photos.length === 0) && detail.photos && detail.photos.length > 0) {
+                    // Always fetch all photos from Google Places API for comprehensive gallery
+                    if (detail.photos && detail.photos.length > 0) {
                       try {
                         const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                        setPhotos(urls.slice(0,3));
+                        setPhotos(urls);
                       } catch (err) {
                         console.warn('Failed to extract photo urls', err);
                       }
@@ -601,11 +601,6 @@ const ListingDetail = () => {
               </CardContent>
             </Card>
 
-            <div className="my-6">
-              <Ad density="compact" />
-            </div>
-
-
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <Card>
@@ -615,7 +610,7 @@ const ListingDetail = () => {
                   <CardContent>
                     {photos && photos.length > 0 ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {photos.slice(0,3).map((src, i) => (
+                        {photos.map((src, i) => (
                           <button key={i} onClick={() => { setSelectedPhoto(i); setPhotoDialogOpen(true); }} className="w-full overflow-hidden rounded-lg shadow-sm">
                             <img loading="lazy" src={src} alt={`Photo ${i+1}`} className="object-cover w-full h-36 md:h-44 transition-transform duration-200 hover:scale-105" />
                           </button>
@@ -624,7 +619,7 @@ const ListingDetail = () => {
                     ) : (
                       <div className="h-48 bg-muted rounded-lg flex items-center justify-center text-sm text-muted-foreground">No photos available</div>
                     )}
-                    {photos && photos.length > 3 && <div className="text-sm text-muted-foreground mt-2">Showing {Math.min(3, photos.length)} of {photos.length} photos</div>}
+                    {photos && photos.length > 1 && <div className="text-sm text-muted-foreground mt-2">Showing {photos.length} photos</div>}
                   </CardContent>
                 </Card>
               </div>
@@ -731,10 +726,6 @@ const ListingDetail = () => {
                 <p className="mt-3 text-xs text-muted-foreground">Reviews are aggregated from Google Reviews. When connected, ratings and excerpts will appear here.</p>
               </CardContent>
             </Card>
-
-            <div className="my-6">
-              <Ad density="compact" />
-            </div>
 
             <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
               <DialogContent className="max-w-3xl w-[90vw]">
