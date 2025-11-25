@@ -727,10 +727,6 @@ const ListingDetail = () => {
               </CardContent>
             </Card>
 
-            <div className="my-6">
-              <Ad density="compact" />
-            </div>
-
             <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
               <DialogContent className="max-w-3xl w-[90vw]">
                 <div className="p-2">
