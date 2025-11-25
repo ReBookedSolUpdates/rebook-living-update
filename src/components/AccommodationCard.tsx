@@ -149,6 +149,87 @@ const AccommodationCard = ({
     }
   };
 
+  // Fetch Google Places photo if no local images
+  useEffect(() => {
+    if (localImages && localImages.length > 0) return; // Already have images
+
+    const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
+    if (!apiKey) return;
+
+    const loadGoogleMapsAndFetchPhoto = async () => {
+      try {
+        const google = (window as any).google;
+
+        // Wait for Google Maps if not loaded
+        if (!google?.maps?.places) {
+          const existing = document.getElementById('google-maps-script-card');
+          if (!existing) {
+            const script = document.createElement('script');
+            script.id = 'google-maps-script-card';
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+
+            await new Promise<void>((resolve, reject) => {
+              script.onload = () => resolve();
+              script.onerror = () => reject(new Error('Failed to load Google Maps'));
+            });
+          } else {
+            await new Promise<void>((resolve) => {
+              const checkGoogle = setInterval(() => {
+                if ((window as any).google?.maps?.places) {
+                  clearInterval(checkGoogle);
+                  resolve();
+                }
+              }, 100);
+              setTimeout(() => {
+                clearInterval(checkGoogle);
+                resolve();
+              }, 5000);
+            });
+          }
+        }
+
+        const ggl = (window as any).google;
+        if (!ggl?.maps?.places) return;
+
+        const map = new ggl.maps.Map(document.createElement('div'), { zoom: 15 });
+        const service = new ggl.maps.places.PlacesService(map);
+        const addressQuery = [propertyName, address, city, university].filter(Boolean).join(', ');
+
+        service.findPlaceFromQuery(
+          {
+            query: addressQuery || propertyName || address || city,
+            fields: ['place_id', 'geometry', 'name'],
+          },
+          (results: any, status: any) => {
+            if (status === ggl.maps.places.PlacesServiceStatus.OK && results?.[0]) {
+              const placeId = results[0].place_id;
+              service.getDetails(
+                { placeId, fields: ['photos'] },
+                (detail: any, dStatus: any) => {
+                  if (dStatus === ggl.maps.places.PlacesServiceStatus.OK && detail?.photos?.[0]) {
+                    try {
+                      const photoUrl = detail.photos[0].getUrl({ maxWidth: 400 });
+                      setLocalImages([photoUrl]);
+                    } catch (err) {
+                      console.warn('Failed to extract photo url', err);
+                    }
+                  }
+                }
+              );
+            }
+          }
+        );
+      } catch (err) {
+        console.warn('Failed to fetch Google Places photo', err);
+      }
+    };
+
+    loadGoogleMapsAndFetchPhoto();
+  }, [id]);
+
 
   return (
     <Link

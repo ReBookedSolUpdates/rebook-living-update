@@ -54,7 +54,7 @@ const Index = () => {
       {/* Hero - background house image */}
       <section className="relative h-[65vh] md:h-[72vh]">
         <img
-          src="https://picsum.photos/id/1018/1600/900"
+          src="https://images.pexels.com/photos/4907201/pexels-photo-4907201.jpeg"
           alt="Modern student accommodation with spacious living areas and study rooms near South African universities"
           onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           className="absolute inset-0 w-full h-full object-cover"
