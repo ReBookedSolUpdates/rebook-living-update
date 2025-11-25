@@ -216,9 +216,9 @@ const Browse = () => {
                   })()}
                 </div>
                 
-                {totalPages > 1 && (
-                  <div className="mt-8">
-                    <Pagination>
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination>
                       <PaginationContent>
                         <PaginationItem>
                           <PaginationPrevious
