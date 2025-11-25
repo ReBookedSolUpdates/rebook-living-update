@@ -297,7 +297,7 @@ const ListingDetail = () => {
                     if ((!photos || photos.length === 0) && detail.photos && detail.photos.length > 0) {
                       try {
                         const urls = detail.photos.map((p: any) => p.getUrl({ maxWidth: 800 }));
-                        setPhotos(urls.slice(0,3));
+                        setPhotos(urls);
                       } catch (err) {
                         console.warn('Failed to extract photo urls', err);
                       }
