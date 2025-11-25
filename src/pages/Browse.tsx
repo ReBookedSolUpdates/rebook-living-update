@@ -175,9 +175,11 @@ const Browse = () => {
                 <div className="space-y-6">
                   {(() => {
                     const rows = [];
-                    // Laptop: 3 columns, Mobile: 1 column, Tablet: 2 columns
+                    // Laptop: 3 columns, Mobile: 2 columns, Tablet: 2 columns
                     const itemsPerRow = isLargeScreen ? 3 : 2;
+                    const itemsPerAdBlock = 3;
 
+                    let adCounter = 0;
                     for (let i = 0; i < paginatedAccommodations.length; i += itemsPerRow) {
                       const rowItems = paginatedAccommodations.slice(i, i + itemsPerRow);
                       rows.push(
@@ -203,13 +205,15 @@ const Browse = () => {
                         </div>
                       );
 
-                      // Add ad only after the first row
-                      if (i === 0) {
+                      adCounter += rowItems.length;
+                      // Add ad after every 3 listings
+                      if (adCounter >= itemsPerAdBlock && i + itemsPerRow < paginatedAccommodations.length) {
                         rows.push(
                           <div key={`ad-row-${i}`} className="my-4">
                             <Ad />
                           </div>
                         );
+                        adCounter = 0;
                       }
                     }
                     return rows;
