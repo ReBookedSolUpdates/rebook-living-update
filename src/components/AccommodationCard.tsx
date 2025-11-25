@@ -150,9 +150,16 @@ const AccommodationCard = ({
     }
   };
 
-  // Fetch Google Places photo if no local images
+  // Fetch Google Places photo if no local images (with caching by address prefix)
   useEffect(() => {
     if (localImages && localImages.length > 0) return; // Already have images
+
+    // Check cache first
+    const cachedPhoto = getCachedPhoto(address);
+    if (cachedPhoto) {
+      setLocalImages([cachedPhoto]);
+      return;
+    }
 
     const apiKey = (import.meta.env as any).VITE_GOOGLE_MAPS_API;
     if (!apiKey) return;
@@ -214,6 +221,7 @@ const AccommodationCard = ({
                     try {
                       const photoUrl = detail.photos[0].getUrl({ maxWidth: 400 });
                       setLocalImages([photoUrl]);
+                      setCachedPhoto(address, photoUrl);
                     } catch (err) {
                       console.warn('Failed to extract photo url', err);
                     }
@@ -229,7 +237,7 @@ const AccommodationCard = ({
     };
 
     loadGoogleMapsAndFetchPhoto();
-  }, [id]);
+  }, [id, address]);
 
 
   return (
