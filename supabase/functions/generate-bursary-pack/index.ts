@@ -190,7 +190,19 @@ Create 3-5 personalized accommodation + bursary packs. For each pack, provide:
 5. Application strategy and timeline
 6. Why this is a good match
 
-Format as JSON array of pack objects.`;
+IMPORTANT: You MUST respond with ONLY a valid JSON array. Start your response with [ and end with ]. Do not include any text before or after the JSON.
+
+Example format:
+[
+  {
+    "packName": "Pack 1",
+    "accommodation": { "property_name": "...", "address": "..." },
+    "bursary": { "name": "...", "provider": "..." },
+    "financialBreakdown": "...",
+    "whyMatch": "...",
+    "applicationStrategy": "..."
+  }
+]`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
