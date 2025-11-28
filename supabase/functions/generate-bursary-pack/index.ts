@@ -159,10 +159,20 @@ For each pack, explain:
 
 Be specific, practical, and encouraging. Focus on actionable information.`;
 
+    // Format budget range for display
+    const budgetDisplay: Record<string, string> = {
+      'under-2000': 'Under R2,000',
+      '2000-4000': 'R2,000 - R4,000',
+      '4000-6000': 'R4,000 - R6,000',
+      '6000-8000': 'R6,000 - R8,000',
+      '8000-10000': 'R8,000 - R10,000',
+      'over-10000': 'Over R10,000',
+    };
+
     const userPrompt = `Student Profile:
 ${preferences.university ? `University: ${preferences.university}` : ''}
 ${preferences.city ? `Preferred City: ${preferences.city}` : ''}
-${preferences.maxBudget ? `Budget: Up to R${preferences.maxBudget}/month` : ''}
+${preferences.maxBudget ? `Budget Range: ${budgetDisplay[preferences.maxBudget] || preferences.maxBudget}/month` : ''}
 ${preferences.fieldOfStudy ? `Field of Study: ${preferences.fieldOfStudy}` : ''}
 ${preferences.academicPerformance ? `Academic Performance: ${preferences.academicPerformance}` : ''}
 ${preferences.nsfasEligible ? 'NSFAS Eligible: Yes' : ''}
