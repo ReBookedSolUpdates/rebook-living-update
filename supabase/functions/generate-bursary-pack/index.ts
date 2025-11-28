@@ -230,15 +230,27 @@ Format as JSON array of pack objects.`;
     let packs;
     try {
       // Try to extract JSON from markdown code blocks if present
-      const jsonMatch = packContent.match(/```json\n([\s\S]*?)\n```/);
-      const jsonContent = jsonMatch ? jsonMatch[1] : packContent;
-      packs = JSON.parse(jsonContent);
+      const jsonMatch = packContent.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+      const jsonContent = jsonMatch ? jsonMatch[1].trim() : packContent.trim();
+
+      // Validate that it looks like JSON before parsing
+      if (jsonContent.startsWith('[') || jsonContent.startsWith('{')) {
+        packs = JSON.parse(jsonContent);
+      } else {
+        throw new Error('Response does not appear to be JSON');
+      }
     } catch (e) {
       console.error('Failed to parse AI response as JSON:', e);
-      packs = {
-        raw_response: packContent,
-        message: 'AI generated a text response instead of structured data'
-      };
+      console.error('Raw content:', packContent);
+
+      // Return error response with helpful message
+      return new Response(JSON.stringify({
+        error: 'AI service returned an invalid response. Please try again with different parameters.',
+        details: 'The AI model could not generate structured pack data for the given criteria.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Cache the result (expires in 24 hours)
