@@ -17,6 +17,126 @@ interface Pack {
   whyMatch: string;
 }
 
+const SOUTH_AFRICAN_CITIES = [
+  "Cape Town",
+  "Johannesburg",
+  "Pretoria",
+  "Durban",
+  "Port Elizabeth",
+  "Bloemfontein",
+  "Pietermaritzburg",
+  "East London",
+  "Stellenbosch",
+  "Soweto",
+  "Centurion",
+  "Bellville",
+  "Tshwane",
+  "Roodepoort",
+  "Alberton",
+  "Springs",
+  "Benoni",
+  "Boksburg",
+  "Germiston",
+  "Sandton",
+  "Midrand",
+  "Randfontein",
+  "Westonaria",
+  "Potchefstroom",
+  "Vanderbijlpark",
+  "Vereeniging",
+  "Nigel",
+  "Bronkhorstspruit",
+  "Mafikeng",
+  "Polokwane",
+  "Lephalale",
+  "Musina",
+  "Thohoyandou",
+  "Mthatha",
+  "Butterworth",
+  "Alice",
+  "Kimberley",
+  "Upington",
+];
+
+const FIELDS_OF_STUDY = [
+  "Engineering",
+  "Science",
+  "Commerce/Business",
+  "Law",
+  "Medicine/Health Sciences",
+  "Education",
+  "Arts/Humanities",
+  "Information Technology",
+  "Architecture",
+  "Agriculture",
+  "Social Sciences",
+  "Psychology",
+  "Economics",
+  "Nursing",
+  "Environmental Science",
+  "Pharmacy",
+  "Veterinary Science",
+  "Mining Engineering",
+  "Civil Engineering",
+  "Mechanical Engineering",
+  "Electrical Engineering",
+  "Chemical Engineering",
+  "Computer Science",
+  "Accounting",
+  "Finance",
+  "Marketing",
+  "Management",
+  "Human Resources",
+  "Tourism",
+  "Hospitality",
+];
+
+const SA_UNIVERSITIES = [
+  "University of Cape Town",
+  "University of the Witwatersrand",
+  "University of Johannesburg",
+  "University of Pretoria",
+  "Stellenbosch University",
+  "University of KwaZulu-Natal",
+  "Rhodes University",
+  "North-West University",
+  "Tshwane University of Technology",
+  "Cape Peninsula University of Technology",
+  "Durban University of Technology",
+  "University of the Western Cape",
+  "University of Fort Hare",
+  "University of the Free State",
+  "University of Zululand",
+  "Walter Sisulu University",
+  "Nelson Mandela University",
+  "Mangosuthu University of Technology",
+  "Sol Plaatje University",
+  "University of South Africa (UNISA)",
+  "Central University of Technology",
+  "Vaal University of Technology",
+  "University of Limpopo",
+  "University of Mpumalanga",
+  "Sefako Makgatho Health Sciences University",
+];
+
+const BUDGET_RANGES = [
+  { label: "Under R2,000", value: "under-2000" },
+  { label: "R2,000 - R4,000", value: "2000-4000" },
+  { label: "R4,000 - R6,000", value: "4000-6000" },
+  { label: "R6,000 - R8,000", value: "6000-8000" },
+  { label: "R8,000 - R10,000", value: "8000-10000" },
+  { label: "Over R10,000", value: "over-10000" },
+];
+
+const DIVERSITY_CATEGORIES = [
+  "African",
+  "Coloured",
+  "Indian",
+  "White",
+  "Prefer not to say",
+  "Other",
+];
+
 const BursaryPackGenerator = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -90,43 +210,78 @@ const BursaryPackGenerator = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="university">University</Label>
-              <Input
-                id="university"
-                placeholder="e.g., University of Pretoria"
+              <Select
                 value={preferences.university}
-                onChange={(e) => setPreferences({ ...preferences, university: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, university: value })}
+              >
+                <SelectTrigger id="university">
+                  <SelectValue placeholder="Select a university" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SA_UNIVERSITIES.map((university) => (
+                    <SelectItem key={university} value={university}>
+                      {university}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                placeholder="e.g., Pretoria"
+              <Select
                 value={preferences.city}
-                onChange={(e) => setPreferences({ ...preferences, city: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, city: value })}
+              >
+                <SelectTrigger id="city">
+                  <SelectValue placeholder="Select a city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SOUTH_AFRICAN_CITIES.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="budget">Maximum Monthly Budget (R)</Label>
-              <Input
-                id="budget"
-                type="number"
-                placeholder="e.g., 5000"
+              <Select
                 value={preferences.maxBudget}
-                onChange={(e) => setPreferences({ ...preferences, maxBudget: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, maxBudget: value })}
+              >
+                <SelectTrigger id="budget">
+                  <SelectValue placeholder="Select budget range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUDGET_RANGES.map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="field">Field of Study</Label>
-              <Input
-                id="field"
-                placeholder="e.g., Engineering"
+              <Select
                 value={preferences.fieldOfStudy}
-                onChange={(e) => setPreferences({ ...preferences, fieldOfStudy: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, fieldOfStudy: value })}
+              >
+                <SelectTrigger id="field">
+                  <SelectValue placeholder="Select field of study" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FIELDS_OF_STUDY.map((field) => (
+                    <SelectItem key={field} value={field}>
+                      {field}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -149,12 +304,21 @@ const BursaryPackGenerator = () => {
 
             <div className="space-y-2">
               <Label htmlFor="diversity">Diversity Category (Optional)</Label>
-              <Input
-                id="diversity"
-                placeholder="e.g., African, Coloured, Indian, White"
+              <Select
                 value={preferences.diversity}
-                onChange={(e) => setPreferences({ ...preferences, diversity: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, diversity: value })}
+              >
+                <SelectTrigger id="diversity">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIVERSITY_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

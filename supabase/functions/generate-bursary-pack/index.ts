@@ -99,6 +99,20 @@ serve(async (req) => {
       });
     }
 
+    // Convert budget range to numeric value for filtering
+    let maxBudgetValue: number | null = null;
+    if (preferences.maxBudget) {
+      const budgetMap: Record<string, number> = {
+        'under-2000': 2000,
+        '2000-4000': 4000,
+        '4000-6000': 6000,
+        '6000-8000': 8000,
+        '8000-10000': 10000,
+        'over-10000': 100000, // Use a large number for "over"
+      };
+      maxBudgetValue = budgetMap[preferences.maxBudget] || null;
+    }
+
     // Fetch accommodations
     let accommodationsQuery = supabase
       .from('accommodations')
@@ -111,8 +125,8 @@ serve(async (req) => {
     if (preferences.city) {
       accommodationsQuery = accommodationsQuery.eq('city', preferences.city);
     }
-    if (preferences.maxBudget) {
-      accommodationsQuery = accommodationsQuery.lte('monthly_cost', preferences.maxBudget);
+    if (maxBudgetValue) {
+      accommodationsQuery = accommodationsQuery.lte('monthly_cost', maxBudgetValue);
     }
 
     const { data: accommodations, error: accomError } = await accommodationsQuery;
@@ -145,10 +159,20 @@ For each pack, explain:
 
 Be specific, practical, and encouraging. Focus on actionable information.`;
 
+    // Format budget range for display
+    const budgetDisplay: Record<string, string> = {
+      'under-2000': 'Under R2,000',
+      '2000-4000': 'R2,000 - R4,000',
+      '4000-6000': 'R4,000 - R6,000',
+      '6000-8000': 'R6,000 - R8,000',
+      '8000-10000': 'R8,000 - R10,000',
+      'over-10000': 'Over R10,000',
+    };
+
     const userPrompt = `Student Profile:
 ${preferences.university ? `University: ${preferences.university}` : ''}
 ${preferences.city ? `Preferred City: ${preferences.city}` : ''}
-${preferences.maxBudget ? `Budget: Up to R${preferences.maxBudget}/month` : ''}
+${preferences.maxBudget ? `Budget Range: ${budgetDisplay[preferences.maxBudget] || preferences.maxBudget}/month` : ''}
 ${preferences.fieldOfStudy ? `Field of Study: ${preferences.fieldOfStudy}` : ''}
 ${preferences.academicPerformance ? `Academic Performance: ${preferences.academicPerformance}` : ''}
 ${preferences.nsfasEligible ? 'NSFAS Eligible: Yes' : ''}
@@ -166,7 +190,19 @@ Create 3-5 personalized accommodation + bursary packs. For each pack, provide:
 5. Application strategy and timeline
 6. Why this is a good match
 
-Format as JSON array of pack objects.`;
+IMPORTANT: You MUST respond with ONLY a valid JSON array. Start your response with [ and end with ]. Do not include any text before or after the JSON.
+
+Example format:
+[
+  {
+    "packName": "Pack 1",
+    "accommodation": { "property_name": "...", "address": "..." },
+    "bursary": { "name": "...", "provider": "..." },
+    "financialBreakdown": "...",
+    "whyMatch": "...",
+    "applicationStrategy": "..."
+  }
+]`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -206,15 +242,27 @@ Format as JSON array of pack objects.`;
     let packs;
     try {
       // Try to extract JSON from markdown code blocks if present
-      const jsonMatch = packContent.match(/```json\n([\s\S]*?)\n```/);
-      const jsonContent = jsonMatch ? jsonMatch[1] : packContent;
-      packs = JSON.parse(jsonContent);
+      const jsonMatch = packContent.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+      const jsonContent = jsonMatch ? jsonMatch[1].trim() : packContent.trim();
+
+      // Validate that it looks like JSON before parsing
+      if (jsonContent.startsWith('[') || jsonContent.startsWith('{')) {
+        packs = JSON.parse(jsonContent);
+      } else {
+        throw new Error('Response does not appear to be JSON');
+      }
     } catch (e) {
       console.error('Failed to parse AI response as JSON:', e);
-      packs = {
-        raw_response: packContent,
-        message: 'AI generated a text response instead of structured data'
-      };
+      console.error('Raw content:', packContent);
+
+      // Return error response with helpful message
+      return new Response(JSON.stringify({
+        error: 'AI service returned an invalid response. Please try again with different parameters.',
+        details: 'The AI model could not generate structured pack data for the given criteria.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Cache the result (expires in 24 hours)
