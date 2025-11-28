@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, Trash2, Eye } from "lucide-react";
+import { Trash2, FileText, Upload } from "lucide-react";
+import { toast as sonnerToast } from "sonner";
 
 interface Bursary {
   id: string;
@@ -21,7 +23,9 @@ const BursariesTab = () => {
   const { toast } = useToast();
   const [bursaries, setBursaries] = useState<Bursary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [csvText, setCsvText] = useState("");
+  const [jsonText, setJsonText] = useState("");
 
   useEffect(() => {
     fetchBursaries();
@@ -48,59 +52,102 @@ const BursariesTab = () => {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const parseCSV = (csv: string) => {
+    const lines = csv.trim().split("\n");
+    if (lines.length < 2) {
+      throw new Error("CSV must have at least a header row and one data row");
+    }
 
-    setUploading(true);
+    const headers = lines[0].split(",").map(h => h.trim());
+    const bursariesData = [];
 
-    try {
-      const text = await file.text();
-      let data;
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(",").map(v => v.trim());
+      const bursary: any = {};
 
-      if (file.name.endsWith('.json')) {
-        data = JSON.parse(text);
-      } else if (file.name.endsWith('.csv')) {
-        // Simple CSV parser
-        const lines = text.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
-        data = lines.slice(1).map(line => {
-          const values = line.split(',');
-          const obj: any = {};
-          headers.forEach((header, index) => {
-            obj[header] = values[index]?.trim();
-          });
-          return obj;
-        });
-      } else {
-        throw new Error('Unsupported file format. Please use JSON or CSV.');
+      headers.forEach((header, index) => {
+        let value = values[index]?.trim();
+
+        if (value === "NULL" || value === "null" || value === "") {
+          value = null;
+        }
+
+        if (!value && (header === "id" || header === "created_at" || header === "updated_at")) {
+          return;
+        }
+
+        if (header === "id") {
+          return;
+        } else {
+          bursary[header] = value;
+        }
+      });
+
+      if (!bursary.name) {
+        throw new Error(`Row ${i + 1}: name is required`);
       }
 
-      // Ensure data is an array
+      bursariesData.push(bursary);
+    }
+
+    return bursariesData;
+  };
+
+  const handleCSVSubmit = async () => {
+    if (!csvText.trim()) {
+      sonnerToast.error("Please enter CSV data");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const data = parseCSV(csvText);
+      const { error } = await supabase
+        .from("bursaries")
+        .insert(data);
+
+      if (error) throw error;
+
+      sonnerToast.success(`Successfully added ${data.length} bursary(ies)`);
+      setCsvText("");
+      await fetchBursaries();
+    } catch (error: any) {
+      sonnerToast.error(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleJSONSubmit = async () => {
+    if (!jsonText.trim()) {
+      sonnerToast.error("Please enter JSON data");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const data = JSON.parse(jsonText);
       const bursariesArray = Array.isArray(data) ? data : [data];
 
+      bursariesArray.forEach((bursary, index) => {
+        if (!bursary.name) {
+          throw new Error(`Item ${index + 1}: name is required`);
+        }
+      });
+
       const { error } = await supabase
-        .from('bursaries')
+        .from("bursaries")
         .insert(bursariesArray);
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: `${bursariesArray.length} bursaries uploaded successfully`,
-      });
-
-      fetchBursaries();
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload file",
-        variant: "destructive",
-      });
+      sonnerToast.success(`Successfully added ${bursariesArray.length} bursary(ies)`);
+      setJsonText("");
+      await fetchBursaries();
+    } catch (error: any) {
+      sonnerToast.error(error.message);
     } finally {
-      setUploading(false);
-      event.target.value = '';
+      setIsProcessing(false);
     }
   };
 
