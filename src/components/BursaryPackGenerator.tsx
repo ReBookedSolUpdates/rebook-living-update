@@ -91,6 +91,52 @@ const FIELDS_OF_STUDY = [
   "Hospitality",
 ];
 
+const SA_UNIVERSITIES = [
+  "University of Cape Town",
+  "University of the Witwatersrand",
+  "University of Johannesburg",
+  "University of Pretoria",
+  "Stellenbosch University",
+  "University of KwaZulu-Natal",
+  "Rhodes University",
+  "North-West University",
+  "Tshwane University of Technology",
+  "Cape Peninsula University of Technology",
+  "Durban University of Technology",
+  "University of the Western Cape",
+  "University of Fort Hare",
+  "University of the Free State",
+  "University of Zululand",
+  "Walter Sisulu University",
+  "Nelson Mandela University",
+  "Mangosuthu University of Technology",
+  "Sol Plaatje University",
+  "University of South Africa (UNISA)",
+  "Central University of Technology",
+  "Vaal University of Technology",
+  "University of Limpopo",
+  "University of Mpumalanga",
+  "Sefako Makgatho Health Sciences University",
+];
+
+const BUDGET_RANGES = [
+  { label: "Under R2,000", value: "under-2000" },
+  { label: "R2,000 - R4,000", value: "2000-4000" },
+  { label: "R4,000 - R6,000", value: "4000-6000" },
+  { label: "R6,000 - R8,000", value: "6000-8000" },
+  { label: "R8,000 - R10,000", value: "8000-10000" },
+  { label: "Over R10,000", value: "over-10000" },
+];
+
+const DIVERSITY_CATEGORIES = [
+  "African",
+  "Coloured",
+  "Indian",
+  "White",
+  "Prefer not to say",
+  "Other",
+];
+
 const BursaryPackGenerator = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
