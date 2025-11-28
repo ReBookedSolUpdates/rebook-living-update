@@ -210,12 +210,21 @@ const BursaryPackGenerator = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="university">University</Label>
-              <Input
-                id="university"
-                placeholder="e.g., University of Pretoria"
+              <Select
                 value={preferences.university}
-                onChange={(e) => setPreferences({ ...preferences, university: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, university: value })}
+              >
+                <SelectTrigger id="university">
+                  <SelectValue placeholder="Select a university" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SA_UNIVERSITIES.map((university) => (
+                    <SelectItem key={university} value={university}>
+                      {university}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -239,13 +248,21 @@ const BursaryPackGenerator = () => {
 
             <div className="space-y-2">
               <Label htmlFor="budget">Maximum Monthly Budget (R)</Label>
-              <Input
-                id="budget"
-                type="number"
-                placeholder="e.g., 5000"
+              <Select
                 value={preferences.maxBudget}
-                onChange={(e) => setPreferences({ ...preferences, maxBudget: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, maxBudget: value })}
+              >
+                <SelectTrigger id="budget">
+                  <SelectValue placeholder="Select budget range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BUDGET_RANGES.map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -287,12 +304,21 @@ const BursaryPackGenerator = () => {
 
             <div className="space-y-2">
               <Label htmlFor="diversity">Diversity Category (Optional)</Label>
-              <Input
-                id="diversity"
-                placeholder="e.g., African, Coloured, Indian, White"
+              <Select
                 value={preferences.diversity}
-                onChange={(e) => setPreferences({ ...preferences, diversity: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, diversity: value })}
+              >
+                <SelectTrigger id="diversity">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIVERSITY_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
