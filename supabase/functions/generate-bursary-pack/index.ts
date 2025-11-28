@@ -99,6 +99,20 @@ serve(async (req) => {
       });
     }
 
+    // Convert budget range to numeric value for filtering
+    let maxBudgetValue: number | null = null;
+    if (preferences.maxBudget) {
+      const budgetMap: Record<string, number> = {
+        'under-2000': 2000,
+        '2000-4000': 4000,
+        '4000-6000': 6000,
+        '6000-8000': 8000,
+        '8000-10000': 10000,
+        'over-10000': 100000, // Use a large number for "over"
+      };
+      maxBudgetValue = budgetMap[preferences.maxBudget] || null;
+    }
+
     // Fetch accommodations
     let accommodationsQuery = supabase
       .from('accommodations')
@@ -111,8 +125,8 @@ serve(async (req) => {
     if (preferences.city) {
       accommodationsQuery = accommodationsQuery.eq('city', preferences.city);
     }
-    if (preferences.maxBudget) {
-      accommodationsQuery = accommodationsQuery.lte('monthly_cost', preferences.maxBudget);
+    if (maxBudgetValue) {
+      accommodationsQuery = accommodationsQuery.lte('monthly_cost', maxBudgetValue);
     }
 
     const { data: accommodations, error: accomError } = await accommodationsQuery;
