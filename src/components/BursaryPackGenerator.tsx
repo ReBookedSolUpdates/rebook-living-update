@@ -174,12 +174,21 @@ const BursaryPackGenerator = () => {
 
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                placeholder="e.g., Pretoria"
+              <Select
                 value={preferences.city}
-                onChange={(e) => setPreferences({ ...preferences, city: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, city: value })}
+              >
+                <SelectTrigger id="city">
+                  <SelectValue placeholder="Select a city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SOUTH_AFRICAN_CITIES.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -195,12 +204,21 @@ const BursaryPackGenerator = () => {
 
             <div className="space-y-2">
               <Label htmlFor="field">Field of Study</Label>
-              <Input
-                id="field"
-                placeholder="e.g., Engineering"
+              <Select
                 value={preferences.fieldOfStudy}
-                onChange={(e) => setPreferences({ ...preferences, fieldOfStudy: e.target.value })}
-              />
+                onValueChange={(value) => setPreferences({ ...preferences, fieldOfStudy: value })}
+              >
+                <SelectTrigger id="field">
+                  <SelectValue placeholder="Select field of study" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FIELDS_OF_STUDY.map((field) => (
+                    <SelectItem key={field} value={field}>
+                      {field}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
