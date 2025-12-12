@@ -73,6 +73,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/bursary-packs" element={<BursaryPacks />} />
+            <Route path="/campus" element={<ReBookedCampus />} />
             <Route path="/panel" element={<ProtectedAdminRoute><Dashboard /></ProtectedAdminRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
