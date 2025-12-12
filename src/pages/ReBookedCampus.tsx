@@ -173,7 +173,7 @@ const UniversitiesSection = () => {
             <SelectValue placeholder="Filter by degree" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Degrees</SelectItem>
+            <SelectItem value="all">All Degrees</SelectItem>
             {allDegrees.map((degree) => (
               <SelectItem key={degree} value={degree}>
                 {degree}
