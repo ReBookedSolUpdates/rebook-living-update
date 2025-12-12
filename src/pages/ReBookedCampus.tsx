@@ -415,7 +415,7 @@ const PrivateInstitutionsSection = () => {
             <SelectValue placeholder="Filter by program type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Programs</SelectItem>
+            <SelectItem value="all">All Programs</SelectItem>
             {allPrograms.map((program) => (
               <SelectItem key={program} value={program}>
                 {program}
