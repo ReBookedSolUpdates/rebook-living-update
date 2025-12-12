@@ -390,7 +390,7 @@ const PrivateInstitutionsSection = () => {
 
   const filteredInstitutions = privateInstitutions.filter((inst) => {
     const matchesSearch = inst.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesProgram = !selectedProgram || inst.programs.some((p) => p.includes(selectedProgram));
+    const matchesProgram = selectedProgram === "all" || !selectedProgram || inst.programs.some((p) => p.includes(selectedProgram));
     return matchesSearch && matchesProgram;
   });
 
