@@ -14,6 +14,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import BursaryPacks from "./pages/BursaryPacks";
+import ReBookedCampus from "./pages/ReBookedCampus";
 import NotFound from "./pages/NotFound";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { useEffect } from "react";
