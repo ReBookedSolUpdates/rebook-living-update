@@ -150,7 +150,7 @@ const UniversitiesSection = () => {
 
   const filteredUniversities = universities.filter((uni) => {
     const matchesSearch = uni.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDegree = !selectedDegree || uni.degrees.includes(selectedDegree);
+    const matchesDegree = selectedDegree === "all" || !selectedDegree || uni.degrees.includes(selectedDegree);
     return matchesSearch && matchesDegree;
   });
 
