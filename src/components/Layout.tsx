@@ -85,6 +85,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <Link to="/browse" className="text-base font-medium hover:underline underline-offset-4">
                   Browse
                 </Link>
+                <Link to="/campus" className="text-base font-medium hover:underline underline-offset-4">
+                  Campus
+                </Link>
                 <Link to="/bursary-packs" className="text-base font-medium hover:underline underline-offset-4">
                   AI Packs
                 </Link>
@@ -140,6 +143,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <h4 className="font-semibold mb-4">Explore</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link to="/browse" onClick={(e) => handleFooterNav(e, '/browse')} className="text-muted-foreground hover:text-primary">Browse Listings</Link></li>
+                <li><Link to="/campus" onClick={(e) => handleFooterNav(e, '/campus')} className="text-muted-foreground hover:text-primary">Campus Guide</Link></li>
                 <li><Link to="/bursary-packs" onClick={(e) => handleFooterNav(e, '/bursary-packs')} className="text-muted-foreground hover:text-primary">AI Bursary Packs</Link></li>
                 <li><Link to="/about" onClick={(e) => handleFooterNav(e, '/about')} className="text-muted-foreground hover:text-primary">About Us</Link></li>
                 <li><Link to="/contact" onClick={(e) => handleFooterNav(e, '/contact')} className="text-muted-foreground hover:text-primary">Contact</Link></li>

@@ -14,6 +14,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import BursaryPacks from "./pages/BursaryPacks";
+import ReBookedCampus from "./pages/ReBookedCampus";
 import NotFound from "./pages/NotFound";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { useEffect } from "react";
@@ -72,6 +73,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/bursary-packs" element={<BursaryPacks />} />
+            <Route path="/campus" element={<ReBookedCampus />} />
             <Route path="/panel" element={<ProtectedAdminRoute><Dashboard /></ProtectedAdminRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
